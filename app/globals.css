@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Tokens da direção visual — ver docs/design.md.
+   Derivados do logo: navy + ciano. Não inventar cor fora daqui. */
+@theme {
+  --color-navy: #16304f;
+  --color-navy-soft: #1e4468;
+  --color-cyan: #45c8d4;
+  --color-cyan-deep: #1b8b99;
+  --color-paper: #f4f6f7;
+  --color-ink: #12222e;
+  --color-mute: #64757f;
+  --color-line: #dde3e6;
+
+  /* Sinal funcional: esperando decisão ou dinheiro do cliente.
+     Nunca usar como cor de botão ou enfeite — perde o significado. */
+  --color-amber: #e9a13b;
+
+  /* Status da OS. Sempre acompanhados de texto, nunca só cor. */
+  --color-status-aguardando: #64757f;
+  --color-status-orcamento: #e9a13b;
+  --color-status-aprovado: #2c6e9b;
+  --color-status-conserto: #1b8b99;
+  --color-status-pronto: #2e9e6b;
+  --color-status-entregue: #9aa5ab;
+  --color-status-recusado: #c0492f;
+
+  --font-display: var(--font-archivo), system-ui, sans-serif;
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* 16px é o piso: abaixo disso não se lê em pé, com pressa, no balcão. */
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dado é mono: código da OS, IMEI, dinheiro, data.
+   Alinha em coluna e não confunde 0 com O. */
+.dado {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Piso de qualidade — não se anuncia, não se negocia. */
+:focus-visible {
+  outline: 2px solid var(--color-cyan-deep);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
