@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="E&amp;S Tech">
+  <!-- Marca reduzida. Mantém a estrutura do logo cheio — disco navy, anel
+       ciano — e descarta os personagens e os traços de circuito, que a
+       32px viram borrão. Ver docs/design.md. -->
+  <circle cx="32" cy="32" r="32" fill="#16304F"/>
+  <circle cx="32" cy="32" r="28" fill="none" stroke="#45C8D4" stroke-width="3.5"/>
+  <text
+    x="32" y="33.5"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="Archivo, 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif"
+    font-size="34"
+    font-weight="800"
+    fill="#FFFFFF"
+  >&amp;</text>
+</svg>
