@@ -260,7 +260,9 @@ create index movimentacoes_caixa_os_idx on movimentacoes_caixa (ordem_servico_id
 -- Nenhum destes valores é armazenado. Guardar total e saldo em coluna é
 -- criar duas fontes para o mesmo número, que uma hora divergem — mesmo
 -- raciocínio do ADR 0002.
-create view ordens_servico_totais as
+-- security_invoker = on é obrigatório: sem isso a view roda com privilégio
+-- do dono e ignora o RLS das tabelas de baixo.
+create view ordens_servico_totais with (security_invoker = on) as
 select
   os.id,
   coalesce(serv.valor_mao_obra, 0) as valor_mao_obra,
