@@ -41,6 +41,15 @@ const DESTINOS = [
       <path d="M3 7h18v12H3zM3 7l3-4h12l3 4M12 11v4M10 13h4" />
     ),
   },
+  // Cotação é consulta de balcão com o cliente esperando resposta, não
+  // configuração — por isso está aqui e não em Ajustes.
+  {
+    href: "/cotacoes",
+    rotulo: "Peças",
+    icone: (
+      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+    ),
+  },
 ];
 
 export function Navegacao() {
