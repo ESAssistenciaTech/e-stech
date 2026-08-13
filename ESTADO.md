@@ -1,0 +1,156 @@
+# Estado do projeto — E&S Tech
+
+Documento de retomada. Escrito em **13/08/2026**, no commit `13f8dff`.
+
+Serve para quem chega sem ter acompanhado a construção — inclusive um agente
+em sessão nova. Diz onde o projeto está, o que já foi decidido, o que está
+esperando ação humana e o que falta construir.
+
+> **Leia primeiro:** `AGENTS.md` → `docs/adr/` → `CONTEXT.md` → `docs/design.md`
+> → `inicio.md`. Este arquivo é o *status*; aqueles são a *autoridade*.
+> Havendo conflito, o ADR vence e este arquivo é que está velho.
+
+---
+
+## 1. O que o sistema é
+
+Sistema de gestão de uma assistência técnica de eletrônicos — celulares e
+computadores. O núcleo é a **Ordem de Serviço (OS)**. Usuário único: o dono,
+operando **em pé no balcão, uma mão segurando o aparelho do cliente**. Essa
+frase governa quase toda decisão de interface.
+
+Três superfícies: área administrativa (privada), portal de acompanhamento
+(público, por código) e landing page (pública, para a bio do Instagram).
+
+**Restrição dura: custo zero.** Vercel, Supabase e Cloudinary, todos no plano
+gratuito.
+
+## 2. Stack
+
+| Camada | O quê |
+|---|---|
+| Front e back | Next.js 16.3 (App Router) + React 19.2 + TypeScript, na Vercel |
+| Estilo | Tailwind 4 (tokens em `app/globals.css`) |
+| Banco, auth, RLS | Supabase |
+| Imagens | Cloudinary (só a URL vai para o banco) |
+| QR | pacote `qrcode`, gerado no servidor |
+
+Não existe backend separado: route handlers e server actions **são** o backend.
+Ver [ADR 0012](docs/adr/0012-stack-next-vercel-supabase-cloudinary.md).
+
+## 3. O que está pronto
+
+### Fase 1 — completa
+
+Auth e proteção de rota · Dados da loja · Clientes (lista, busca, detalhe com
+histórico, edição) · Tipos de serviço (cadastro com categoria, valor e garantia
+padrão) · OS (abertura, lista filtrada, detalhe, edição, mudança de status) ·
+Caixa (sinal, parcial, quitação, estorno, formas de pagamento) · Painel ·
+Exportação CSV.
+
+### Fase 2 — completa
+
+Portal público de acompanhamento · Comprovante impresso com QR · WhatsApp com
+modelos editáveis · Cotação de peça com fornecedores · Landing page · Registro
+fotográfico (entrada e entrega).
+
+### Rotas existentes
+
+```
+públicas   /  ·  /acompanhar  ·  /acompanhar/[codigo]  ·  /login
+admin      /dashboard  /os  /os/nova  /os/[id]
+           /os/[id]/editar  /os/[id]/fotos  /os/[id]/comprovante
+           /clientes  /clientes/novo  /clientes/[id]  /clientes/[id]/editar
+           /financeiro  /cotacoes  /cotacoes/nova
+           /fornecedores  /fornecedores/novo  /fornecedores/[id]
+           /servicos  /servicos/novo  /servicos/[id]
+           /mensagens  /configuracoes
+api        /api/exportar/[tipo]   (ordens | clientes | caixa)
+```
+
+### Migrations — todas as 10 aplicadas
+
+```
+0001 fase1                    tabelas base, RLS, enums
+0002 view_security_invoker    correção de vazamento na view de totais
+0003 view_com_status          status na view, para "a receber"
+0004 aparelho                 marcas, tipo de senha, "não identificado"
+0005 portal_publico           função consultar_os
+0006 dados_loja_publicos      loja sem expor a margem
+0007 modelos_mensagem         textos do WhatsApp
+0008 cotacoes                 fornecedores, peças, qualidades, cotações
+0009 servicos_publicos        serviços para a landing, sem preço
+0010 os_fotos                 registro fotográfico
+```
+
+## 4. Pendências de ação humana
+
+Nada disso é código. São passos que só o dono pode dar.
+
+- [ ] **Rotacionar o `CLOUDINARY_API_SECRET`.** O segredo atual passou por chat e precisa ser trocado: painel do Cloudinary → Settings → API Keys → Generate New Key. Atualizar `.env.local` e a Vercel, depois desativar o antigo. Há um comentário no `.env.local` lembrando.
+- [ ] **Variáveis na Vercel.** As três do Cloudinary (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) precisam estar em Settings → Environment Variables. Sem elas, foto funciona na máquina local e falha no ar.
+- [ ] **Preencher `/configuracoes`.** Endereço, horário e telefone. A landing esconde o botão de WhatsApp sem o telefone, e o comprovante sai com cabeçalho vazio.
+- [ ] **Preencher os valores em `/servicos`.** Os seis tipos semeados estão com valor zero, e a própria tela avisa. Enquanto estiverem assim, toda OS nasce sem preço.
+- [ ] **Cadastrar fornecedores** em Cotações → Fornecedores. Sem eles a tela de registro de cotação não tem onde pôr preço.
+- [ ] **Apagar ou trocar a senha do usuário `claude@gmail.com`.** Foi criado para teste e a senha circulou em texto puro.
+
+## 5. Armadilhas descobertas na construção
+
+Coisas que custaram tempo e não estão em nenhum ADR.
+
+**Servidor de dev zumbi.** No Windows, o processo do `next dev` às vezes sobrevive ao encerramento e continua segurando a porta 3000 servindo **código velho**. Sintoma: `npm run dev` avisa `Port 3000 is in use... using available port 3001`, e o navegador em `localhost:3000` mostra uma versão antiga. Isso já gerou um "erro 500" que não existia. Resolver com `npx kill-port 3000`.
+
+**Variável de ambiente exige reinício.** Mexeu no `.env.local`, o servidor de dev **precisa** ser reiniciado — ele lê tudo na subida.
+
+**`"use server"` só exporta função async.** Objetos de estado inicial (`ESTADO_INICIAL`) não podem morar em arquivo de action; vivem em `lib/`. O erro só aparece no build, e a mensagem não é óbvia.
+
+**Insert em lote no PostgREST não usa DEFAULT.** Ao inserir um array, ele monta **um conjunto único de colunas**. Se uma linha traz um campo e outra não, a que não traz recebe `NULL` explícito em vez de cair no `default` — e estoura o `not null`. Todas as linhas de um lote precisam ter as mesmas chaves.
+
+**View no Postgres ignora RLS por padrão.** Toda view criada aqui nasce com `security_invoker = on`. Sem isso ela roda com privilégio do dono e vaza as tabelas de baixo. Já aconteceu uma vez, com valores e lucro expostos a anônimo. Ver [ADR 0012](docs/adr/0012-stack-next-vercel-supabase-cloudinary.md).
+
+**RLS não filtra coluna.** Quando uma tela pública precisa de parte de uma tabela protegida, a saída **não** é abrir a tabela para `anon` — é criar função `security definer` com `search_path` fixo devolvendo campo a campo. Já foi feito três vezes: `consultar_os`, `dados_loja_publicos`, `servicos_publicos`.
+
+**Comparar HTML cru em teste dá falso negativo.** Mordeu quatro vezes. O `Intl` usa espaço não-quebrável (U+00A0) entre `R$` e o número; o React insere `<!-- -->` entre texto estático e expressão no SSR; entidades vêm escapadas. Normalize antes de comparar, ou compare pelos dígitos.
+
+**O `&` no nome da pasta quebrava o npm.** A pasta chamava `e&sTech` e o shell do Windows cortava o caminho no `&`. Já resolvido (renomeada para `e-sTech`), mas não voltar a usar `&` em caminho.
+
+## 6. O que falta — Fase 3
+
+Nada aqui é urgente para o uso diário. A fase existe para quando o negócio
+crescer.
+
+| Item | Nota |
+|---|---|
+| **Venda avulsa / PDV** | Venda de balcão itemizada, fora da OS. É o único lugar que baixa estoque de insumo. Ver [ADR 0005](docs/adr/0005-venda-avulsa-separada-da-os.md). O dono disse que não vai vender insumo no começo |
+| **Insumos e lista de compras** | É lista de compras, **não** controle de estoque: quantidade editada à mão e marcação de "precisa repor". Ver [ADR 0006](docs/adr/0006-insumo-e-lista-de-compras-nao-controle-de-estoque.md) |
+| **Aparelhos doadores** | Aparelho guardado para canibalizar. Não tem quantidade: cada um é um registro com anotação livre do que já foi arrancado |
+| **Relatório de lucro** | Por OS e por tipo de serviço. Os dados já existem (`custo_peca` e a view de totais); falta a tela |
+| **Múltiplos usuários** | Hoje a policy de RLS é `authenticated` faz tudo. Permissão por papel entra aqui |
+| **Limpeza de fotos** | Tela listando OS com garantia vencida que ainda têm foto, ordenadas por espaço, para apagar em lote. O dono quis manual, não automático |
+
+### Fora das fases
+
+- **Emissão fiscal** é não-objetivo declarado. O comprovante impresso **não é nota fiscal** e a tela diz isso. O modelo de venda já nasce itemizado para o dia em que for preciso, mas a emissão está fora
+- **Vídeo no registro fotográfico** foi descartado: 30 segundos em 1080p consomem o que 250 fotos comprimidas consumiriam
+
+## 7. Como retomar
+
+```bash
+cd C:\Users\sidne\Desktop\e-sTech
+npm run dev          # http://localhost:3000
+npm run build        # confere tipos e build antes de commitar
+```
+
+O `.env.local` não é versionado. O modelo está em `.env.example`.
+
+**Testes:** não existe suíte automatizada. A verificação foi feita com scripts
+descartáveis em Node que entram com a sessão real, exercitam o caminho e
+apagam os dados no fim. Se for repetir, o padrão que funcionou foi: logar com
+`@supabase/supabase-js`, montar o cookie `sb-<ref>-auth-token` como
+`base64-` + JSON da sessão, e bater nas rotas com ele. Vale converter isso numa
+suíte de verdade em algum momento — hoje cada verificação é reescrita do zero.
+
+**O que sempre testar antes de dar por pronto:** que anônimo não alcança
+`ordens_servico`, `clientes`, `cotacoes` nem `os_fotos`; que o comprovante não
+imprime senha do aparelho nem custo de peça; e que o portal não devolve nada
+além dos sete campos de `consultar_os`.

@@ -15,6 +15,7 @@ Ordem de Serviço (OS).
 
 ## Leia nesta ordem, antes de escrever código
 
+0. **`ESTADO.md`** — onde o projeto está agora, o que espera ação humana e as armadilhas já descobertas. Comece por aqui numa sessão nova.
 1. **`docs/adr/`** — as decisões e o porquê delas. Vence tudo, inclusive este arquivo.
 2. **`CONTEXT.md`** — o glossário. Manda no significado dos termos.
 3. **`docs/design.md`** — a direção visual. Ler antes de qualquer tela.
