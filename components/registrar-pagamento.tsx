@@ -1,15 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import {
-  FORMAS_PAGAMENTO,
-  ROTULO_FORMA,
-} from "@/lib/caixa";
+import { FORMAS_PAGAMENTO, ROTULO_FORMA, CAIXA_INICIAL } from "@/lib/caixa";
 import { moeda } from "@/lib/formato";
-import {
-  registrarMovimentacao,
-  CAIXA_INICIAL,
-} from "@/app/(admin)/financeiro/actions";
+import { registrarMovimentacao } from "@/app/(admin)/financeiro/actions";
 
 /**
  * Recebimento a partir da OS — o caminho do balcão. Vem preenchido com o

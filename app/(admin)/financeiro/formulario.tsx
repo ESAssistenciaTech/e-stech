@@ -8,7 +8,8 @@ import {
   ROTULO_CATEGORIA,
   ROTULO_FORMA,
 } from "@/lib/caixa";
-import { registrarMovimentacao, CAIXA_INICIAL } from "./actions";
+import { registrarMovimentacao } from "./actions";
+import { CAIXA_INICIAL } from "@/lib/caixa";
 
 const campo =
   "h-12 w-full rounded-lg border border-line bg-white px-3 text-base text-ink outline-none focus:border-cyan-deep";

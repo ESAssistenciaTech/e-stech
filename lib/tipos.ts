@@ -108,6 +108,15 @@ export type ServicoDaOS = {
   garantia_dias: number;
 };
 
+/**
+ * Estado das ações de cliente.
+ *
+ * Mora aqui e não no arquivo de action porque um módulo "use server" só
+ * pode exportar função async — exportar um objeto dele quebra o build.
+ */
+export type EstadoCliente = { erro: string | null };
+export const CLIENTE_INICIAL: EstadoCliente = { erro: null };
+
 /** Vem da view ordens_servico_totais. Nada disso é armazenado. */
 export type TotaisOS = {
   id: string;

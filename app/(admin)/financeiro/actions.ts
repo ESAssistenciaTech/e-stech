@@ -6,12 +6,9 @@ import {
   CATEGORIAS_ENTRADA,
   CATEGORIAS_SAIDA,
   FORMAS_PAGAMENTO,
+  type EstadoCaixa,
   type FormaPagamento,
 } from "@/lib/caixa";
-
-export type EstadoCaixa = { erro: string | null; ok: boolean };
-
-export const CAIXA_INICIAL: EstadoCaixa = { erro: null, ok: false };
 
 /**
  * Registra uma movimentação de caixa — o único registro de dinheiro do

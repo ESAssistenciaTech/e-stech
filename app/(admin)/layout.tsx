@@ -4,11 +4,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { sair } from "../(auth)/login/actions";
 
-// Só o que existe. Clientes e Caixa entram quando as telas forem feitas —
-// link para rota inexistente é 404 na cara do usuário.
+// Só o que existe: link para rota inexistente é 404 na cara do usuário.
 const NAV = [
   { href: "/dashboard", rotulo: "Painel" },
   { href: "/os", rotulo: "Ordens" },
+  { href: "/clientes", rotulo: "Clientes" },
   { href: "/financeiro", rotulo: "Caixa" },
 ];
 

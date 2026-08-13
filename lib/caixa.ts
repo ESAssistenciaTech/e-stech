@@ -28,6 +28,15 @@ export const ROTULO_CATEGORIA: Record<string, string> = {
   estorno: "Estorno",
 };
 
+/**
+ * Estado das ações de caixa.
+ *
+ * Mora aqui e não no arquivo de action porque um módulo "use server" só
+ * pode exportar função async — exportar um objeto dele quebra o build.
+ */
+export type EstadoCaixa = { erro: string | null; ok: boolean };
+export const CAIXA_INICIAL: EstadoCaixa = { erro: null, ok: false };
+
 export type Movimentacao = {
   id: string;
   tipo: "entrada" | "saida";
