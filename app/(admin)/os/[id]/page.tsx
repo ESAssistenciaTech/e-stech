@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { AvisarWhatsApp } from "@/components/avisar-whatsapp";
+import { situacaoSugerida, type ModeloMensagem } from "@/lib/mensagem";
 import { codigo, dataHora, diasDesde, moeda, telefone } from "@/lib/formato";
 import {
   ROTULO_SENHA,
@@ -23,7 +26,13 @@ export default async function DetalheOSPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: os }, { data: totais }, { data: servicos }] = await Promise.all([
+  const [
+    { data: os },
+    { data: totais },
+    { data: servicos },
+    { data: modelos },
+    { data: loja },
+  ] = await Promise.all([
     supabase
       .from("ordens_servico")
       .select("*, clientes(id, nome, telefone)")
@@ -34,6 +43,12 @@ export default async function DetalheOSPage({
       .from("os_servicos")
       .select("id, valor, garantia_dias, tipos_servico(nome)")
       .eq("ordem_servico_id", id),
+    supabase.from("modelos_mensagem").select("id, situacao, texto"),
+    supabase
+      .from("dados_loja")
+      .select("nome")
+      .eq("singleton", true)
+      .maybeSingle(),
   ]);
 
   if (!os) notFound();
@@ -56,6 +71,12 @@ export default async function DetalheOSPage({
 
   const parada = diasDesde(os.atualizado_em);
   const saldo = Number(totais?.saldo ?? 0);
+
+  // O link que vai na mensagem tem que ser o endereço público de verdade —
+  // em produção é o domínio da Vercel, não localhost.
+  const cabecalhos = await headers();
+  const host = cabecalhos.get("host") ?? "localhost:3000";
+  const enderecoBase = `${host.startsWith("localhost") ? "http" : "https"}://${host}`;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
@@ -106,6 +127,20 @@ export default async function DetalheOSPage({
       {/* Ação antes dos fatos: quem abriu esta tela veio fazer alguma coisa,
           e rolar oito blocos pra chegar nela custa tempo de balcão. */}
       <section className={`${bloco} nao-imprimir flex flex-col gap-3`}>
+        <AvisarWhatsApp
+          modelos={(modelos ?? []) as ModeloMensagem[]}
+          telefone={cliente?.telefone ?? null}
+          sugestao={situacaoSugerida(status, saldo)}
+          dados={{
+            cliente: cliente?.nome ?? "",
+            loja: loja?.nome ?? "E&S Tech",
+            codigo: os.codigo_publico,
+            aparelho: aparelho || null,
+            valor: Number(totais?.valor_total ?? 0),
+            saldo,
+            link: `${enderecoBase}/acompanhar/${os.codigo_publico}`,
+          }}
+        />
         <RegistrarPagamento ordemServicoId={os.id} saldo={saldo} />
         <SeletorStatus
           id={os.id}

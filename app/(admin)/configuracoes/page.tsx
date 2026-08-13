@@ -38,20 +38,32 @@ export default async function ConfiguracoesPage() {
         Configurações
       </h1>
 
-      <Link
-        href="/servicos"
-        className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 hover:border-cyan-deep"
-      >
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-ink">Serviços</p>
-          <p className="text-xs text-mute">
-            O que você faz, com preço e garantia padrão de cada um.
-          </p>
-        </div>
-        <span aria-hidden className="shrink-0 text-mute">
-          →
-        </span>
-      </Link>
+      {[
+        {
+          href: "/servicos",
+          titulo: "Serviços",
+          detalhe: "O que você faz, com preço e garantia padrão de cada um.",
+        },
+        {
+          href: "/mensagens",
+          titulo: "Mensagens do WhatsApp",
+          detalhe: "O texto que abre pronto ao avisar o cliente.",
+        },
+      ].map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 hover:border-cyan-deep"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-ink">{item.titulo}</p>
+            <p className="text-xs text-mute">{item.detalhe}</p>
+          </div>
+          <span aria-hidden className="shrink-0 text-mute">
+            →
+          </span>
+        </Link>
+      ))}
 
       <section className={bloco}>
         <h2 className="mb-1 font-display text-lg font-semibold text-navy">
