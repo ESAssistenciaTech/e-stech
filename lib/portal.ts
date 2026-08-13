@@ -31,6 +31,28 @@ export async function consultarOS(codigo: string): Promise<OSPublica | null> {
   return data[0] as OSPublica;
 }
 
+export type LojaPublica = {
+  nome: string;
+  endereco: string | null;
+  horario: string | null;
+  telefone: string | null;
+  logo_url: string | null;
+};
+
+/**
+ * Dados da loja para tela pública.
+ *
+ * Passa por função porque `dados_loja` guarda a margem sobre o fornecedor na
+ * mesma linha, e RLS não filtra coluna. Nenhuma página pública deve consultar
+ * a tabela direto.
+ */
+export async function lojaPublica(): Promise<LojaPublica | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("dados_loja_publicos");
+  if (error || !data || data.length === 0) return null;
+  return data[0] as LojaPublica;
+}
+
 /**
  * O que o cliente lê em cada etapa.
  *

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { lojaPublica } from "@/lib/portal";
 
 async function buscar(form: FormData) {
   "use server";
@@ -18,12 +18,7 @@ export default async function AcompanharPage({
 }) {
   const { erro } = await searchParams;
 
-  const supabase = await createClient();
-  const { data: loja } = await supabase
-    .from("dados_loja")
-    .select("nome")
-    .eq("singleton", true)
-    .maybeSingle();
+  const loja = await lojaPublica();
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-navy px-6 py-12">

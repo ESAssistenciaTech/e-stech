@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
-import { consultarOS, ETAPA } from "@/lib/portal";
+import { consultarOS, lojaPublica, ETAPA } from "@/lib/portal";
 import { codigo as formatarCodigo, dataHora } from "@/lib/formato";
 import { STATUS } from "@/lib/tipos";
 
@@ -55,14 +54,7 @@ export default async function StatusPublicoPage({
   params: Promise<{ codigo: string }>;
 }) {
   const { codigo } = await params;
-  const os = await consultarOS(codigo);
-
-  const supabase = await createClient();
-  const { data: loja } = await supabase
-    .from("dados_loja")
-    .select("nome, telefone, endereco, horario")
-    .eq("singleton", true)
-    .maybeSingle();
+  const [os, loja] = await Promise.all([consultarOS(codigo), lojaPublica()]);
 
   if (!os) {
     return (
