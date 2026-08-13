@@ -9,6 +9,7 @@ import { sair } from "../(auth)/login/actions";
 const NAV = [
   { href: "/dashboard", rotulo: "Painel" },
   { href: "/os", rotulo: "Ordens" },
+  { href: "/financeiro", rotulo: "Caixa" },
 ];
 
 export default async function AdminLayout({

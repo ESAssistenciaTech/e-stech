@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { codigo, dataHora, moeda, telefone } from "@/lib/formato";
 import { STATUS, type StatusOS } from "@/lib/tipos";
 import { SeletorStatus } from "./seletor-status";
+import { RegistrarPagamento } from "@/components/registrar-pagamento";
 
 const bloco = "rounded-xl border border-line bg-white p-4";
 
@@ -147,7 +148,18 @@ export default async function DetalheOSPage({
       </section>
 
       <section className={bloco}>
-        <SeletorStatus id={os.id} atual={status} />
+        <RegistrarPagamento
+          ordemServicoId={os.id}
+          saldo={Number(totais?.saldo ?? 0)}
+        />
+      </section>
+
+      <section className={bloco}>
+        <SeletorStatus
+          id={os.id}
+          atual={status}
+          valorPago={Number(totais?.valor_pago ?? 0)}
+        />
       </section>
 
       <p className="dado px-1 pb-6 text-xs text-mute">

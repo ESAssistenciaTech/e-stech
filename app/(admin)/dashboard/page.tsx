@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { moeda } from "@/lib/formato";
+import { codigo, moeda } from "@/lib/formato";
 import { STATUS, STATUS_ABERTOS, type StatusOS } from "@/lib/tipos";
 
 export default async function DashboardPage() {
@@ -10,17 +10,26 @@ export default async function DashboardPage() {
   inicioDoMes.setDate(1);
   inicioDoMes.setHours(0, 0, 0, 0);
 
-  const [{ data: abertas }, { data: entradas }] = await Promise.all([
-    supabase
-      .from("ordens_servico")
-      .select("status")
-      .in("status", STATUS_ABERTOS),
-    supabase
-      .from("movimentacoes_caixa")
-      .select("valor")
-      .eq("tipo", "entrada")
-      .gte("data", inicioDoMes.toISOString()),
-  ]);
+  const [{ data: abertas }, { data: entradas }, { data: aReceber }] =
+    await Promise.all([
+      supabase
+        .from("ordens_servico")
+        .select("status")
+        .in("status", STATUS_ABERTOS),
+      supabase
+        .from("movimentacoes_caixa")
+        .select("valor")
+        .eq("tipo", "entrada")
+        .gte("data", inicioDoMes.toISOString()),
+      // Entregue e ainda devendo. Fiado com cliente conhecido é rotina do
+      // balcão — mas some de vista se não estiver na tela que se olha todo dia.
+      supabase
+        .from("ordens_servico_totais")
+        .select("id, numero, codigo_publico, saldo")
+        .eq("status", "entregue")
+        .gt("saldo", 0)
+        .order("saldo", { ascending: false }),
+    ]);
 
   const porStatus = new Map<StatusOS, number>();
   for (const os of abertas ?? []) {
@@ -49,6 +58,34 @@ export default async function DashboardPage() {
           <p className="dado text-3xl font-bold text-navy">{moeda(faturamento)}</p>
         </div>
       </div>
+
+      {aReceber && aReceber.length > 0 && (
+        <section className="rounded-xl border border-amber/40 bg-amber/10 p-4">
+          <div className="mb-3 flex items-baseline gap-2">
+            <h2 className="font-display font-semibold text-navy">A receber</h2>
+            <span className="dado ml-auto text-lg font-bold text-navy">
+              {moeda(
+                aReceber.reduce((soma, os) => soma + Number(os.saldo), 0),
+              )}
+            </span>
+          </div>
+          <ul className="flex flex-col gap-1">
+            {aReceber.map((os) => (
+              <li key={os.id}>
+                <Link
+                  href={`/os/${os.id}`}
+                  className="flex min-h-11 items-center gap-3"
+                >
+                  <span className="dado min-w-0 flex-1 truncate font-medium text-navy">
+                    {codigo(os.codigo_publico)}
+                  </span>
+                  <span className="dado font-semibold">{moeda(os.saldo)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="rounded-xl border border-line bg-white p-4">
         <h2 className="mb-3 font-display font-semibold text-navy">Por status</h2>

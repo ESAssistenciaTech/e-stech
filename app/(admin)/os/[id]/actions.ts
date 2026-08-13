@@ -37,6 +37,31 @@ export async function mudarStatus(
     return { erro: "Não foi possível mudar o status." };
   }
 
+  // Estorno no cancelamento: quanto devolver é decisão humana caso a caso —
+  // o sistema pergunta e registra o que foi decidido, sem impor regra.
+  const estorno = Number(
+    String(form.get("estorno") ?? "0").replace(",", "."),
+  );
+  if (status === "cancelado" && Number.isFinite(estorno) && estorno > 0) {
+    const { error: erroEstorno } = await supabase
+      .from("movimentacoes_caixa")
+      .insert({
+        tipo: "saida",
+        categoria: "estorno",
+        descricao: "Estorno por cancelamento",
+        valor: estorno,
+        ordem_servico_id: id,
+      });
+
+    if (erroEstorno) {
+      // A OS já está cancelada; só o dinheiro não foi registrado.
+      return {
+        erro: "OS cancelada, mas o estorno não foi registrado. Lance no caixa.",
+      };
+    }
+    revalidatePath("/financeiro");
+  }
+
   // As datas de conclusão e entrega são gravadas por trigger no banco.
   revalidatePath(`/os/${id}`);
   revalidatePath("/os");
