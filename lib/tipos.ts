@@ -120,6 +120,9 @@ export const CLIENTE_INICIAL: EstadoCliente = { erro: null };
 export type EstadoServico = { erro: string | null };
 export const SERVICO_INICIAL: EstadoServico = { erro: null };
 
+export type EstadoOSEdicao = { erro: string | null };
+export const OS_EDICAO_INICIAL: EstadoOSEdicao = { erro: null };
+
 /** Vem da view ordens_servico_totais. Nada disso é armazenado. */
 export type TotaisOS = {
   id: string;

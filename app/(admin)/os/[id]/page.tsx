@@ -43,9 +43,17 @@ export default async function DetalheOSPage({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <Link href="/os" className="text-sm font-medium text-cyan-deep">
-        ← Ordens
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link href="/os" className="text-sm font-medium text-cyan-deep">
+          ← Ordens
+        </Link>
+        <Link
+          href={`/os/${os.id}/editar`}
+          className="ml-auto flex h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-medium text-navy"
+        >
+          Editar
+        </Link>
+      </div>
 
       {/* Cabeçalho: a etiqueta, em versão grande. */}
       <header className="overflow-hidden rounded-xl border border-line bg-white">
@@ -78,6 +86,35 @@ export default async function DetalheOSPage({
         <h2 className="mb-2 font-display font-semibold text-navy">Pedido</h2>
         <p className="whitespace-pre-wrap text-ink">{os.solicitacao}</p>
       </section>
+
+      {os.diagnostico && (
+        <section className={bloco}>
+          <h2 className="mb-2 font-display font-semibold text-navy">
+            Diagnóstico
+          </h2>
+          <p className="whitespace-pre-wrap text-ink">{os.diagnostico}</p>
+        </section>
+      )}
+
+      {os.servico_realizado && (
+        <section className={bloco}>
+          <h2 className="mb-2 font-display font-semibold text-navy">
+            Serviço realizado
+          </h2>
+          <p className="whitespace-pre-wrap text-ink">{os.servico_realizado}</p>
+        </section>
+      )}
+
+      {os.motivo_cancelamento && (
+        <section className={`${bloco} border-status-recusado/40`}>
+          <h2 className="mb-2 font-display font-semibold text-status-recusado">
+            Motivo do cancelamento
+          </h2>
+          <p className="whitespace-pre-wrap text-ink">
+            {os.motivo_cancelamento}
+          </p>
+        </section>
+      )}
 
       {(os.aparelho_identificador || os.senha_aparelho) && (
         <section className={bloco}>
