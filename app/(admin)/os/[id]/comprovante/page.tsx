@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/server";
 import { codigo, dataHora, moeda, telefone } from "@/lib/formato";
 import { STATUS, type StatusOS } from "@/lib/tipos";
@@ -60,6 +62,19 @@ export default async function ComprovantePage({
     0,
     ...(servicos ?? []).map((s) => s.garantia_dias),
   );
+
+  // Gerado aqui, não por serviço externo: mandar o código da OS para um
+  // gerador de terceiro entregaria a ele o identificador do conserto.
+  const cabecalhos = await headers();
+  const host = cabecalhos.get("host") ?? "localhost:3000";
+  const protocolo = host.startsWith("localhost") ? "http" : "https";
+  const enderecoPortal = `${protocolo}://${host}/acompanhar/${os.codigo_publico}`;
+  const qr = await QRCode.toString(enderecoPortal, {
+    type: "svg",
+    margin: 0,
+    errorCorrectionLevel: "M",
+    color: { dark: "#12222e", light: "#00000000" },
+  });
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -278,13 +293,24 @@ export default async function ComprovantePage({
 
         {/* Acompanhamento e assinatura -------------------------------- */}
         <section className="bloco-impresso border-t border-line pt-4 text-sm">
-          <p className="mb-6">
-            Acompanhe pelo código{" "}
-            <span className="dado font-semibold">
-              {codigo(os.codigo_publico)}
-            </span>
-            .
-          </p>
+          <div className="mb-6 flex items-center gap-4">
+            <div
+              className="size-24 shrink-0"
+              aria-hidden
+              dangerouslySetInnerHTML={{ __html: qr }}
+            />
+            <div>
+              <p className="font-medium">Acompanhe pelo celular</p>
+              <p className="text-mute">
+                Aponte a câmera para o código ao lado, ou acesse{" "}
+                <span className="dado">{host}/acompanhar</span> e digite{" "}
+                <span className="dado font-semibold">
+                  {codigo(os.codigo_publico)}
+                </span>
+                .
+              </p>
+            </div>
+          </div>
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
               <div className="border-t border-ink pt-1 text-xs text-mute">
