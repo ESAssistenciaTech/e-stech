@@ -85,8 +85,14 @@ export default async function DetalheOSPage({
           ← Ordens
         </Link>
         <Link
-          href={`/os/${os.id}/comprovante`}
+          href={`/os/${os.id}/fotos`}
           className="ml-auto flex h-10 items-center rounded-lg border border-line bg-white px-3 text-sm font-medium text-navy"
+        >
+          Fotos
+        </Link>
+        <Link
+          href={`/os/${os.id}/comprovante`}
+          className="flex h-10 items-center rounded-lg border border-line bg-white px-3 text-sm font-medium text-navy"
         >
           Comprovante
         </Link>
