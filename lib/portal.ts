@@ -53,6 +53,31 @@ export async function lojaPublica(): Promise<LojaPublica | null> {
   return data[0] as LojaPublica;
 }
 
+export type ServicoPublico = { nome: string; categoria: string };
+
+/**
+ * Serviços agrupados por categoria, para a landing.
+ *
+ * Passa por função porque tipos_servico guarda o valor padrão na mesma
+ * linha, e a landing não publica preço.
+ */
+export async function servicosPublicos(): Promise<
+  Map<string, ServicoPublico[]>
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("servicos_publicos");
+
+  const porCategoria = new Map<string, ServicoPublico[]>();
+  if (error || !data) return porCategoria;
+
+  for (const s of data as ServicoPublico[]) {
+    const lista = porCategoria.get(s.categoria) ?? [];
+    lista.push(s);
+    porCategoria.set(s.categoria, lista);
+  }
+  return porCategoria;
+}
+
 /**
  * O que o cliente lê em cada etapa.
  *
