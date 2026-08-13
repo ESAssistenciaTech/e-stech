@@ -20,7 +20,7 @@ export function FormularioNovaOS({
   const [estado, acao, enviando] = useActionState(criarOS, OS_INICIAL);
 
   return (
-    <form action={acao} className="flex flex-col gap-4 pb-28">
+    <form action={acao} className="flex flex-col gap-4 pb-40">
       <section className={bloco}>
         <h2 className={titulo}>Cliente</h2>
         <BlocoCliente />
@@ -64,7 +64,7 @@ export function FormularioNovaOS({
       )}
 
       {/* Ação principal na metade de baixo: é onde o polegar chega. */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-line bg-paper/95 p-4 backdrop-blur">
+      <div className="nao-imprimir fixed inset-x-0 bottom-16 z-10 border-t border-line bg-paper/95 p-4 backdrop-blur">
         <div className="mx-auto max-w-2xl">
           <button
             type="submit"

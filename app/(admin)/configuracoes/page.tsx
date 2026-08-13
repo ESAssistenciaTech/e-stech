@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { DadosLoja } from "@/lib/tipos";
 import { FormularioLoja } from "./formulario";
+import { sair } from "../../(auth)/login/actions";
 
 const bloco = "rounded-xl border border-line bg-white p-4";
 
@@ -35,6 +37,21 @@ export default async function ConfiguracoesPage() {
       <h1 className="font-display text-2xl font-bold text-navy">
         Configurações
       </h1>
+
+      <Link
+        href="/servicos"
+        className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 hover:border-cyan-deep"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-ink">Serviços</p>
+          <p className="text-xs text-mute">
+            O que você faz, com preço e garantia padrão de cada um.
+          </p>
+        </div>
+        <span aria-hidden className="shrink-0 text-mute">
+          →
+        </span>
+      </Link>
 
       <section className={bloco}>
         <h2 className="mb-1 font-display text-lg font-semibold text-navy">
@@ -82,6 +99,15 @@ export default async function ConfiguracoesPage() {
           alguma coisa — guarde o arquivo como você guardaria o caderno da loja.
         </p>
       </section>
+
+      <form action={sair}>
+        <button
+          type="submit"
+          className="h-12 w-full rounded-xl border border-line bg-white font-medium text-mute"
+        >
+          Sair
+        </button>
+      </form>
     </div>
   );
 }

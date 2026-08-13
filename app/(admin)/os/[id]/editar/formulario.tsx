@@ -43,7 +43,7 @@ export function FormularioEditarOS({
   );
 
   return (
-    <form action={acao} className="flex flex-col gap-4 pb-28">
+    <form action={acao} className="flex flex-col gap-4 pb-40">
       <input type="hidden" name="id" value={os.id} />
 
       <section className={bloco}>
@@ -142,7 +142,7 @@ export function FormularioEditarOS({
         </p>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-line bg-paper/95 p-4 backdrop-blur">
+      <div className="nao-imprimir fixed inset-x-0 bottom-16 z-10 border-t border-line bg-paper/95 p-4 backdrop-blur">
         <div className="mx-auto flex max-w-2xl gap-2">
           <Link
             href={`/os/${os.id}`}

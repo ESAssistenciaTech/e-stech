@@ -2,25 +2,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { sair } from "../(auth)/login/actions";
-
-// Só o que existe: link para rota inexistente é 404 na cara do usuário.
-const NAV = [
-  { href: "/dashboard", rotulo: "Painel" },
-  { href: "/os", rotulo: "Ordens" },
-  { href: "/clientes", rotulo: "Clientes" },
-  { href: "/financeiro", rotulo: "Caixa" },
-  { href: "/servicos", rotulo: "Serviços" },
-  { href: "/configuracoes", rotulo: "Ajustes" },
-];
+import { Navegacao } from "@/components/navegacao";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // O middleware já barra quem não tem sessão. Esta checagem é a segunda
-  // camada: nenhuma tela administrativa deve depender só do middleware.
+  // O proxy já barra quem não tem sessão. Esta checagem é a segunda camada:
+  // nenhuma tela administrativa deve depender só dele.
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,37 +20,39 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="nao-imprimir sticky top-0 z-10 flex items-center gap-3 bg-navy px-4 py-3">
+      <header className="nao-imprimir flex items-center gap-2 bg-navy px-4 py-2.5">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/logo-mark.svg" alt="" width={32} height={32} />
-          <span className="font-display text-base font-bold text-white">
+          <Image src="/logo-mark.svg" alt="" width={26} height={26} />
+          <span className="font-display text-sm font-bold tracking-tight text-white">
             E&amp;S Tech
           </span>
         </Link>
 
-        <form action={sair} className="ml-auto">
-          <button
-            type="submit"
-            className="rounded px-2 py-1 text-sm text-white/70 hover:text-white"
+        <Link
+          href="/configuracoes"
+          aria-label="Ajustes"
+          className="ml-auto flex size-10 items-center justify-center rounded-lg text-white/70 hover:text-white"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-5"
+            aria-hidden
           >
-            Sair
-          </button>
-        </form>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1" />
+          </svg>
+        </Link>
       </header>
 
-      <nav className="nao-imprimir sticky top-[56px] z-10 flex gap-1 overflow-x-auto border-b border-line bg-paper px-2">
-        {NAV.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="shrink-0 px-3 py-3 text-sm font-medium text-mute hover:text-navy"
-          >
-            {item.rotulo}
-          </Link>
-        ))}
-      </nav>
+      {/* pb-20 abre espaço pra barra de navegação fixa embaixo. */}
+      <main className="flex-1 px-4 pb-20 pt-5">{children}</main>
 
-      <main className="flex-1 px-4 py-5">{children}</main>
+      <Navegacao />
     </div>
   );
 }

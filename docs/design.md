@@ -104,6 +104,23 @@ relance, e na landing **é** o argumento de método que substitui a reputação 
 Alvo de toque mínimo 48px. Ação principal na metade inferior da tela — é onde o
 polegar chega quando a outra mão está ocupada.
 
+**Navegação embaixo, no admin.** Os quatro destinos que se visita o dia inteiro —
+Painel, Ordens, Clientes, Caixa — ficam numa barra fixa no rodapé. O topo da tela é
+justamente onde o polegar não alcança com a outra mão ocupada, e navegação lá em cima
+cobra um reposicionamento de mão a cada troca de tela.
+
+Serviços e Ajustes **não** entram nessa barra: são configuração, não destino. Vivem
+dentro de Ajustes, alcançável pelo ícone no cabeçalho. Misturar o que se abre vinte
+vezes por dia com o que se abre uma vez por mês tira peso dos dois.
+
+**Ordem na tela da OS: ação antes de fato.** Quem abre uma OS veio *fazer* alguma
+coisa — receber, mudar status. Esses controles vêm logo depois do cabeçalho; os dados
+vêm abaixo. Rolar oito blocos até o botão custa tempo com o cliente esperando.
+
+**Dado interno fica recuado.** Custo de peça e lucro aparecem menores e depois do
+total, separados por linha. Não é esconder: é que a tela às vezes é mostrada de frente
+para o cliente, e a margem não pode competir visualmente com o valor que ele paga.
+
 ## Elemento-assinatura: a etiqueta de serviço
 
 O único elemento memorável, e ele é honesto: **é literalmente o que a loja produz.**
@@ -124,13 +141,33 @@ Quando alguém deixa um aparelho, o que recebe de volta é isto.
 
 O entalhe no topo é afordância real de etiqueta — é por ali que ela prende no aparelho.
 
+### A barra carrega duas informações
+
+Na lista, a barra lateral da etiqueta diz **duas coisas ao mesmo tempo**: a cor é o
+status, e a **espessura é há quantos dias ninguém toca naquela OS**.
+
+```
+▌    4K7-92X    entrou hoje
+▌▌   8P2-QR5    3 dias
+▌▌▌  9X2-KM4    6 dias
+████ 3TB-N7W    12 dias parada
+```
+
+Escala: até 1 dia `w-1` · até 4 `w-1.5` · até 9 `w-2.5` · 10 ou mais `w-4`.
+
+Aparelho encalhado ocupando bancada é problema físico real da loja, e resolvê-lo com
+mais um selo na tela seria empilhar ruído. Assim a informação entra pela periferia:
+barra grossa puxa o olho ao descer a lista, sem número pra ler nem legenda pra
+decorar. Passando de dez dias, o texto aparece também — espessura sozinha não pode
+ser o único canal.
+
 A mesma etiqueta aparece em **toda** superfície, e em cada uma ela faz um trabalho
 diferente:
 
 | Onde | O que ela faz |
 |---|---|
 | Landing | Objeto do hero. Diz "seu aparelho ganha identidade aqui" sem se gabar |
-| Lista de OS (admin) | Cartão da lista. A faixa de status colorida é o que torna a lista escaneável |
+| Lista de OS (admin) | Cartão da lista. A barra de status é o que torna a lista escaneável |
 | Portal público | É a página inteira. O cliente digita o código e recebe a etiqueta dele |
 | PDF | Impressa, com o QR do portal |
 

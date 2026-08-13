@@ -24,7 +24,7 @@ export default async function ClientePage({ params, searchParams }: Params) {
       supabase
         .from("ordens_servico")
         .select(
-          "id, numero, codigo_publico, status, aparelho_marca, aparelho_modelo, data_entrada, data_conclusao",
+          "id, numero, codigo_publico, status, aparelho_marca, aparelho_modelo, marca_nao_identificada, modelo_nao_identificado, data_entrada, atualizado_em",
         )
         .eq("cliente_id", id)
         .order("data_entrada", { ascending: false }),
@@ -135,17 +135,23 @@ export default async function ClientePage({ params, searchParams }: Params) {
               <li key={os.id}>
                 <Etiqueta
                   id={os.id}
-                  numero={os.numero}
                   codigoPublico={os.codigo_publico}
                   status={os.status as StatusOS}
                   aparelho={
-                    [os.aparelho_marca, os.aparelho_modelo]
+                    [
+                      os.marca_nao_identificada
+                        ? "marca não identificada"
+                        : os.aparelho_marca,
+                      os.modelo_nao_identificado
+                        ? "modelo não identificado"
+                        : os.aparelho_modelo,
+                    ]
                       .filter(Boolean)
                       .join(" ") || null
                   }
                   cliente={c.nome}
                   dataEntrada={os.data_entrada}
-                  dataConclusao={os.data_conclusao}
+                  atualizadoEm={os.atualizado_em}
                 />
               </li>
             ))}
