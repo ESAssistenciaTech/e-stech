@@ -123,6 +123,18 @@ export const SERVICO_INICIAL: EstadoServico = { erro: null };
 export type EstadoOSEdicao = { erro: string | null };
 export const OS_EDICAO_INICIAL: EstadoOSEdicao = { erro: null };
 
+export type EstadoLoja = { erro: string | null; ok: boolean };
+export const LOJA_INICIAL: EstadoLoja = { erro: null, ok: false };
+
+export type DadosLoja = {
+  nome: string;
+  endereco: string | null;
+  horario: string | null;
+  telefone: string | null;
+  logo_url: string | null;
+  margem_padrao: number;
+};
+
 /** Vem da view ordens_servico_totais. Nada disso é armazenado. */
 export type TotaisOS = {
   id: string;
