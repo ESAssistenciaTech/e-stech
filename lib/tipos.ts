@@ -56,6 +56,36 @@ export const ROTULO_IDENTIFICADOR: Record<TipoAparelho, string> = {
   outro: "Identificação",
 };
 
+export type Marca = {
+  id: string;
+  nome: string;
+  tipos: TipoAparelho[];
+  ativa: boolean;
+};
+
+/**
+ * Como o aparelho é desbloqueado.
+ *
+ * Guardar só o valor perderia o gesto: "1236" pode ser PIN digitado ou
+ * desenho ligando pontos, e são coisas diferentes na hora de abrir.
+ */
+export const TIPOS_SENHA = ["pin", "padrao", "senha", "sem_senha"] as const;
+export type TipoSenha = (typeof TIPOS_SENHA)[number];
+
+export const ROTULO_SENHA: Record<TipoSenha, string> = {
+  pin: "PIN",
+  padrao: "Padrão",
+  senha: "Senha",
+  sem_senha: "Sem senha",
+};
+
+export const DICA_SENHA: Record<TipoSenha, string> = {
+  pin: "Só números, como 4 ou 6 dígitos",
+  padrao: "Toque os pontos na ordem do desenho",
+  senha: "Letras, números e símbolos",
+  sem_senha: "O aparelho abre sem desbloqueio",
+};
+
 export type Cliente = {
   id: string;
   nome: string;
@@ -84,8 +114,16 @@ export type OrdemServico = {
   aparelho_marca: string | null;
   aparelho_modelo: string | null;
   aparelho_identificador: string | null;
-  /** Sensível: só na área privada. Nunca em portal, PDF ou log. */
+  /** Sensível: só na área privada. Nunca em portal, comprovante ou log. */
   senha_aparelho: string | null;
+  senha_tipo: TipoSenha | null;
+  /**
+   * Distinguem "não preenchi" de "não deu para verificar" — celular que não
+   * liga não tem IMEI conferível, e às vezes nem o dono sabe o modelo.
+   */
+  marca_nao_identificada: boolean;
+  modelo_nao_identificado: boolean;
+  identificador_nao_identificado: boolean;
   solicitacao: string;
   diagnostico: string | null;
   servico_realizado: string | null;
@@ -119,6 +157,9 @@ export const CLIENTE_INICIAL: EstadoCliente = { erro: null };
 
 export type EstadoServico = { erro: string | null };
 export const SERVICO_INICIAL: EstadoServico = { erro: null };
+
+export type EstadoOS = { erro: string | null };
+export const OS_INICIAL: EstadoOS = { erro: null };
 
 export type EstadoOSEdicao = { erro: string | null };
 export const OS_EDICAO_INICIAL: EstadoOSEdicao = { erro: null };

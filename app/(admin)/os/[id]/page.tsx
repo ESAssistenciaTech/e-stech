@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { codigo, dataHora, moeda, telefone } from "@/lib/formato";
-import { STATUS, type StatusOS } from "@/lib/tipos";
+import { ROTULO_SENHA, STATUS, type StatusOS, type TipoSenha } from "@/lib/tipos";
 import { SeletorStatus } from "./seletor-status";
 import { RegistrarPagamento } from "@/components/registrar-pagamento";
 
@@ -37,7 +37,12 @@ export default async function DetalheOSPage({
     telefone: string | null;
   } | null;
   const status = os.status as StatusOS;
-  const aparelho = [os.aparelho_marca, os.aparelho_modelo]
+  // Marca e modelo que não deu pra identificar aparecem como tal, e não como
+  // campo vazio: a diferença é o que protege a loja depois.
+  const aparelho = [
+    os.marca_nao_identificada ? "marca não identificada" : os.aparelho_marca,
+    os.modelo_nao_identificado ? "modelo não identificado" : os.aparelho_modelo,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -48,8 +53,14 @@ export default async function DetalheOSPage({
           ← Ordens
         </Link>
         <Link
-          href={`/os/${os.id}/editar`}
+          href={`/os/${os.id}/comprovante`}
           className="ml-auto flex h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-medium text-navy"
+        >
+          Comprovante
+        </Link>
+        <Link
+          href={`/os/${os.id}/editar`}
+          className="flex h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-medium text-navy"
         >
           Editar
         </Link>
@@ -116,7 +127,9 @@ export default async function DetalheOSPage({
         </section>
       )}
 
-      {(os.aparelho_identificador || os.senha_aparelho) && (
+      {(os.aparelho_identificador ||
+        os.senha_tipo ||
+        os.identificador_nao_identificado) && (
         <section className={bloco}>
           <h2 className="mb-2 font-display font-semibold text-navy">Aparelho</h2>
           {os.aparelho_identificador && (
@@ -125,10 +138,20 @@ export default async function DetalheOSPage({
               {os.aparelho_identificador}
             </p>
           )}
-          {os.senha_aparelho && (
-            <p className="dado text-sm">
-              <span className="text-mute">Senha: </span>
-              {os.senha_aparelho}
+          {os.senha_tipo && (
+            <p className="text-sm">
+              <span className="text-mute">Desbloqueio: </span>
+              <span className="font-medium">
+                {ROTULO_SENHA[os.senha_tipo as TipoSenha]}
+              </span>
+              {os.senha_aparelho && (
+                <span className="dado"> · {os.senha_aparelho}</span>
+              )}
+            </p>
+          )}
+          {os.identificador_nao_identificado && (
+            <p className="text-sm text-amber">
+              Identificação não verificável na entrada
             </p>
           )}
         </section>

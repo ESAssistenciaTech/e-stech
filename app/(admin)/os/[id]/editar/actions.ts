@@ -3,7 +3,13 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { TIPOS_APARELHO, type EstadoOSEdicao, type TipoAparelho } from "@/lib/tipos";
+import {
+  TIPOS_APARELHO,
+  TIPOS_SENHA,
+  type EstadoOSEdicao,
+  type TipoAparelho,
+  type TipoSenha,
+} from "@/lib/tipos";
 
 type ServicoEnviado = {
   /** Ausente quando a linha foi adicionada agora. */
@@ -65,6 +71,14 @@ export async function atualizarOS(
       ? (tipoInformado as TipoAparelho)
       : null;
 
+  const senhaInformada = texto(form, "senha_tipo");
+  const senhaTipo =
+    senhaInformada && TIPOS_SENHA.includes(senhaInformada as TipoSenha)
+      ? (senhaInformada as TipoSenha)
+      : null;
+
+  const marcado = (campo: string) => form.get(campo) !== null;
+
   const supabase = await createClient();
 
   const { error: erroOS } = await supabase
@@ -77,7 +91,17 @@ export async function atualizarOS(
       aparelho_identificador: aparelhoTipo
         ? texto(form, "aparelho_identificador")
         : null,
-      senha_aparelho: aparelhoTipo ? texto(form, "senha_aparelho") : null,
+      senha_tipo: aparelhoTipo ? senhaTipo : null,
+      senha_aparelho:
+        aparelhoTipo && senhaTipo !== "sem_senha"
+          ? texto(form, "senha_aparelho")
+          : null,
+      marca_nao_identificada:
+        !!aparelhoTipo && marcado("marca_nao_identificada"),
+      modelo_nao_identificado:
+        !!aparelhoTipo && marcado("modelo_nao_identificado"),
+      identificador_nao_identificado:
+        !!aparelhoTipo && marcado("identificador_nao_identificado"),
       solicitacao,
       diagnostico: texto(form, "diagnostico"),
       servico_realizado: texto(form, "servico_realizado"),

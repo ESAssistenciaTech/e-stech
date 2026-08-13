@@ -52,6 +52,29 @@ body {
   outline-offset: 2px;
 }
 
+/* Impressão do comprovante. Papel é caro e tinta mais ainda: fundo branco,
+   texto preto, e some tudo que só serve na tela. */
+@media print {
+  .nao-imprimir {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  /* Evita quebrar um bloco no meio entre duas páginas. */
+  .bloco-impresso {
+    break-inside: avoid;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

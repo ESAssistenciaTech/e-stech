@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { codigo } from "@/lib/formato";
-import type { Cliente, OrdemServico, TipoServico } from "@/lib/tipos";
+import type { Cliente, Marca, OrdemServico, TipoServico } from "@/lib/tipos";
 import { FormularioEditarOS } from "./formulario";
 
 export default async function EditarOSPage({
@@ -13,24 +13,26 @@ export default async function EditarOSPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: os }, { data: servicos }, { data: tipos }] = await Promise.all([
-    supabase
-      .from("ordens_servico")
-      .select("*, clientes(*)")
-      .eq("id", id)
-      .maybeSingle(),
-    supabase
-      .from("os_servicos")
-      .select("id, tipo_servico_id, valor, garantia_dias, tipos_servico(nome)")
-      .eq("ordem_servico_id", id)
-      .order("criado_em"),
-    supabase
-      .from("tipos_servico")
-      .select("*")
-      .eq("ativo", true)
-      .order("categoria")
-      .order("nome"),
-  ]);
+  const [{ data: os }, { data: servicos }, { data: tipos }, { data: marcas }] =
+    await Promise.all([
+      supabase
+        .from("ordens_servico")
+        .select("*, clientes(*)")
+        .eq("id", id)
+        .maybeSingle(),
+      supabase
+        .from("os_servicos")
+        .select("id, tipo_servico_id, valor, garantia_dias, tipos_servico(nome)")
+        .eq("ordem_servico_id", id)
+        .order("criado_em"),
+      supabase
+        .from("tipos_servico")
+        .select("*")
+        .eq("ativo", true)
+        .order("categoria")
+        .order("nome"),
+      supabase.from("marcas").select("*").eq("ativa", true).order("nome"),
+    ]);
 
   if (!os) notFound();
 
@@ -62,6 +64,7 @@ export default async function EditarOSPage({
         cliente={cliente}
         servicos={linhas}
         tipos={(tipos ?? []) as TipoServico[]}
+        marcas={(marcas ?? []) as Marca[]}
       />
     </div>
   );

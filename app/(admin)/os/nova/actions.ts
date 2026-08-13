@@ -4,9 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { soDigitos } from "@/lib/formato";
-import { TIPOS_APARELHO, type TipoAparelho } from "@/lib/tipos";
-
-export type EstadoOS = { erro: string | null };
+import {
+  TIPOS_APARELHO,
+  TIPOS_SENHA,
+  type EstadoOS,
+  type TipoAparelho,
+  type TipoSenha,
+} from "@/lib/tipos";
 
 type ServicoEscolhido = {
   tipo_servico_id: string;
@@ -18,6 +22,8 @@ function texto(form: FormData, campo: string) {
   const v = String(form.get(campo) ?? "").trim();
   return v === "" ? null : v;
 }
+
+const marcado = (form: FormData, campo: string) => form.get(campo) !== null;
 
 export async function criarOS(
   _anterior: EstadoOS,
@@ -40,19 +46,22 @@ export async function criarOS(
     return { erro: "Escolha pelo menos um serviço." };
   }
 
-  // Cliente: usa o existente se foi escolhido na busca, senão cria.
+  // Cliente: usa o existente se foi escolhido, senão cadastra o que foi
+  // digitado. Cliente novo é o caso comum no balcão.
   let clienteId = texto(form, "cliente_id");
   if (!clienteId) {
     const nome = texto(form, "cliente_nome");
     if (!nome) {
-      return { erro: "Escolha um cliente ou informe o nome de um novo." };
+      return { erro: "Informe o nome do cliente." };
     }
-    const telefoneNovo = texto(form, "cliente_telefone");
+    const tel = texto(form, "cliente_telefone");
+    const cpf = texto(form, "cliente_cpf");
     const { data: cliente, error } = await supabase
       .from("clientes")
       .insert({
         nome,
-        telefone: telefoneNovo ? soDigitos(telefoneNovo) : null,
+        telefone: tel ? soDigitos(tel) : null,
+        cpf: cpf ? soDigitos(cpf) : null,
       })
       .select("id")
       .single();
@@ -69,19 +78,37 @@ export async function criarOS(
       ? (tipoInformado as TipoAparelho)
       : null;
 
+  const senhaInformada = texto(form, "senha_tipo");
+  const senhaTipo =
+    senhaInformada && TIPOS_SENHA.includes(senhaInformada as TipoSenha)
+      ? (senhaInformada as TipoSenha)
+      : null;
+
   const { data: os, error: erroOS } = await supabase
     .from("ordens_servico")
     .insert({
       cliente_id: clienteId,
       // Aparelho é opcional: existe OS sem aparelho (ADR 0007).
       aparelho_tipo: aparelhoTipo,
-      aparelho_marca: texto(form, "aparelho_marca"),
-      aparelho_modelo: texto(form, "aparelho_modelo"),
-      aparelho_identificador: texto(form, "aparelho_identificador"),
-      senha_aparelho: texto(form, "senha_aparelho"),
+      aparelho_marca: aparelhoTipo ? texto(form, "aparelho_marca") : null,
+      aparelho_modelo: aparelhoTipo ? texto(form, "aparelho_modelo") : null,
+      aparelho_identificador: aparelhoTipo
+        ? texto(form, "aparelho_identificador")
+        : null,
+      senha_tipo: aparelhoTipo ? senhaTipo : null,
+      senha_aparelho:
+        aparelhoTipo && senhaTipo !== "sem_senha"
+          ? texto(form, "senha_aparelho")
+          : null,
+      // Registram que não deu para verificar, e não que faltou preencher.
+      marca_nao_identificada:
+        !!aparelhoTipo && marcado(form, "marca_nao_identificada"),
+      modelo_nao_identificado:
+        !!aparelhoTipo && marcado(form, "modelo_nao_identificado"),
+      identificador_nao_identificado:
+        !!aparelhoTipo && marcado(form, "identificador_nao_identificado"),
       solicitacao,
-      valor_peca: Number(form.get("valor_peca") ?? 0) || 0,
-      custo_peca: Number(form.get("custo_peca") ?? 0) || 0,
+      // Peça não entra na abertura: o custo só existe depois do diagnóstico.
     })
     .select("id")
     .single();

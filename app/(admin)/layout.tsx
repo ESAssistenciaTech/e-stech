@@ -30,7 +30,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-navy px-4 py-3">
+      <header className="nao-imprimir sticky top-0 z-10 flex items-center gap-3 bg-navy px-4 py-3">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image src="/logo-mark.svg" alt="" width={32} height={32} />
           <span className="font-display text-base font-bold text-white">
@@ -48,7 +48,7 @@ export default async function AdminLayout({
         </form>
       </header>
 
-      <nav className="sticky top-[56px] z-10 flex gap-1 overflow-x-auto border-b border-line bg-paper px-2">
+      <nav className="nao-imprimir sticky top-[56px] z-10 flex gap-1 overflow-x-auto border-b border-line bg-paper px-2">
         {NAV.map((item) => (
           <Link
             key={item.href}
