@@ -117,6 +117,9 @@ export type ServicoDaOS = {
 export type EstadoCliente = { erro: string | null };
 export const CLIENTE_INICIAL: EstadoCliente = { erro: null };
 
+export type EstadoServico = { erro: string | null };
+export const SERVICO_INICIAL: EstadoServico = { erro: null };
+
 /** Vem da view ordens_servico_totais. Nada disso é armazenado. */
 export type TotaisOS = {
   id: string;

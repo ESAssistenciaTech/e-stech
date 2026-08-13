@@ -10,6 +10,7 @@ const NAV = [
   { href: "/os", rotulo: "Ordens" },
   { href: "/clientes", rotulo: "Clientes" },
   { href: "/financeiro", rotulo: "Caixa" },
+  { href: "/servicos", rotulo: "Serviços" },
 ];
 
 export default async function AdminLayout({
