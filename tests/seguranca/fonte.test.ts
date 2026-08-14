@@ -106,6 +106,7 @@ describe("migrations", () => {
       "cotacoes",
       "dados_loja",
       "tipos_servico",
+      "insumos",
     ];
 
     for (const { nome, sql } of MIGRACOES) {

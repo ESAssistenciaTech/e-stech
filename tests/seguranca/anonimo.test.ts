@@ -34,12 +34,31 @@ const FECHADAS = [
   "modelos_mensagem",
   "dados_loja",
   "tipos_servico",
+  "insumos",
 ];
+
+/**
+ * Tabela que não existe também devolve zero linha, e passaria no teste sem
+ * provar nada. Migração esquecida tem que dar vermelho, não verde.
+ */
+function tabelaAusente(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    /does not exist|could not find the table/i.test(error.message ?? "")
+  );
+}
 
 describe("acesso anônimo", { skip: semAmbiente ? motivo : false }, () => {
   for (const tabela of FECHADAS) {
     test(`${tabela} não devolve linha`, async () => {
       const { data, error } = await anonimo!.from(tabela).select("*").limit(1);
+
+      assert.ok(
+        !tabelaAusente(error),
+        `${tabela} não existe no banco — migração não aplicada`,
+      );
 
       // Sem policy o Postgres devolve conjunto vazio, não erro. Qualquer um
       // dos dois serve; linha devolvida é que não pode.

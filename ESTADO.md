@@ -70,6 +70,19 @@ Duas coisas que a tela diz e convém não desfazer:
 - **Lucro não é dinheiro em caixa** e não desconta aluguel nem luz. Quem
   responde "quanto entrou" é o Caixa.
 
+**Insumos e lista de compras** (`/insumos`), também pelo Caixa. O que abre por
+padrão é a lista de compras — os marcados —, não o inventário: a pergunta que
+se faz de um insumo é "o que preciso comprar?", não "quantos tenho?"
+(ADR 0006). Marcar é um toque direto da lista, botão "Acabou".
+
+- **Nada desconta sozinho.** Nenhum consumo em OS baixa quantidade, e não é
+  para baixar. Quantidade é editada à mão e aproximada por natureza — nenhum
+  número financeiro pode sair dela.
+- **Comprar sobe a quantidade e lança no caixa na mesma transação**, dentro da
+  função `comprar_insumos`. Não separar isso em duas telas: um dia uma é feita
+  e a outra esquecida, e aí ou o caixa mente ou o estoque mente.
+- Insumo (a loja tem) ≠ peça (catálogo de cotação, a loja não tem).
+
 ### Rotas existentes
 
 ```
@@ -78,13 +91,14 @@ admin      /dashboard  /os  /os/nova  /os/[id]
            /os/[id]/editar  /os/[id]/fotos  /os/[id]/comprovante
            /clientes  /clientes/novo  /clientes/[id]  /clientes/[id]/editar
            /financeiro  /lucro  /cotacoes  /cotacoes/nova
+           /insumos  /insumos/novo  /insumos/[id]  /insumos/comprar
            /fornecedores  /fornecedores/novo  /fornecedores/[id]
            /servicos  /servicos/novo  /servicos/[id]
            /mensagens  /configuracoes
 api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 ```
 
-### Migrations — 10 aplicadas, a 0011 esperando
+### Migrations — 11 aplicadas, a 0012 esperando
 
 ```
 0001 fase1                    tabelas base, RLS, enums
@@ -98,13 +112,14 @@ api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 0009 servicos_publicos        serviços para a landing, sem preço
 0010 os_fotos                 registro fotográfico
 0011 view_com_datas           data e custo na view; data de entrega no insert
+0012 insumos                  insumos, lista de compras, comprar_insumos
 ```
 
 ## 4. Pendências de ação humana
 
 Nada disso é código. São passos que só o dono pode dar.
 
-- [ ] **Aplicar a migração `0011_view_com_datas`.** Colar o arquivo no SQL Editor do Supabase, como foi feito com as dez anteriores. Sem ela `/lucro` não carrega: a view ainda não tem `data_entrega` nem `custo_peca`.
+- [ ] **Aplicar a migração `0012_insumos`.** Colar no SQL Editor do Supabase. Sem ela `/insumos` não carrega, e `npm test` acusa: o teste de acesso anônimo distingue "tabela protegida" de "tabela não existe" e falha na segunda.
 - [ ] **Rotacionar o `CLOUDINARY_API_SECRET`.** O segredo atual passou por chat e precisa ser trocado: painel do Cloudinary → Settings → API Keys → Generate New Key. Atualizar `.env.local` e a Vercel, depois desativar o antigo. Há um comentário no `.env.local` lembrando.
 - [ ] **Variáveis na Vercel.** As três do Cloudinary (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) precisam estar em Settings → Environment Variables. Sem elas, foto funciona na máquina local e falha no ar.
 - [ ] **Preencher `/configuracoes`.** Endereço, horário e telefone. A landing esconde o botão de WhatsApp sem o telefone, e o comprovante sai com cabeçalho vazio.
@@ -142,7 +157,6 @@ crescer.
 | Item | Nota |
 |---|---|
 | **Venda avulsa / PDV** | Venda de balcão itemizada, fora da OS. É o único lugar que baixa estoque de insumo. Ver [ADR 0005](docs/adr/0005-venda-avulsa-separada-da-os.md). O dono disse que não vai vender insumo no começo |
-| **Insumos e lista de compras** | É lista de compras, **não** controle de estoque: quantidade editada à mão e marcação de "precisa repor". Ver [ADR 0006](docs/adr/0006-insumo-e-lista-de-compras-nao-controle-de-estoque.md) |
 | **Aparelhos doadores** | Aparelho guardado para canibalizar. Não tem quantidade: cada um é um registro com anotação livre do que já foi arrancado |
 | **Múltiplos usuários** | Hoje a policy de RLS é `authenticated` faz tudo. Permissão por papel entra aqui |
 | **Limpeza de fotos** | Tela listando OS com garantia vencida que ainda têm foto, ordenadas por espaço, para apagar em lote. O dono quis manual, não automático |
@@ -157,7 +171,7 @@ crescer.
 ```bash
 cd C:\Users\sidne\Desktop\e-sTech
 npm run dev          # http://localhost:3000
-npm test             # 93 testes, ~5s
+npm test             # 94 testes, ~5s
 npm run build        # confere tipos e build antes de commitar
 ```
 

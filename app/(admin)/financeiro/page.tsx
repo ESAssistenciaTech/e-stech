@@ -51,22 +51,36 @@ export default async function FinanceiroPage() {
       </div>
       <p className="-mt-2 px-1 text-xs text-mute">No mês corrente.</p>
 
-      {/* Caixa é dinheiro que entrou; lucro é resultado apurado. São duas
-          perguntas diferentes, e é aqui que a segunda costuma ser feita. */}
-      <Link
-        href="/lucro"
-        className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 hover:border-cyan-deep"
-      >
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-ink">Lucro</p>
-          <p className="text-xs text-mute">
-            Quanto sobrou depois do custo da peça, por período e por serviço.
-          </p>
-        </div>
-        <span aria-hidden className="shrink-0 text-mute">
-          →
-        </span>
-      </Link>
+      {/* Caixa é dinheiro que entrou; lucro é resultado apurado; insumo é
+          dinheiro que vai sair. As três perguntas nascem nesta tela, mas só
+          a primeira se responde aqui. */}
+      {[
+        {
+          href: "/lucro",
+          titulo: "Lucro",
+          detalhe:
+            "Quanto sobrou depois do custo da peça, por período e por serviço.",
+        },
+        {
+          href: "/insumos",
+          titulo: "Insumos",
+          detalhe: "O que acabou e precisa ser comprado. A compra lança aqui.",
+        },
+      ].map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 hover:border-cyan-deep"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-ink">{item.titulo}</p>
+            <p className="text-xs text-mute">{item.detalhe}</p>
+          </div>
+          <span aria-hidden className="shrink-0 text-mute">
+            →
+          </span>
+        </Link>
+      ))}
 
       <FormularioMovimentacao />
 
