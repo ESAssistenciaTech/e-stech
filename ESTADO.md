@@ -126,7 +126,7 @@ admin      /dashboard  /os  /os/nova  /os/[id]
 api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 ```
 
-### Migrations — 13 aplicadas, a 0014 esperando
+### Migrations — todas as 14 aplicadas
 
 ```
 0001 fase1                    tabelas base, RLS, enums
@@ -149,13 +149,12 @@ api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 
 Nada disso é código. São passos que só o dono pode dar.
 
-- [ ] **Aplicar a migração `0014_aparelhos_doadores`.** Colar no SQL Editor do Supabase. Sem ela `/doadores` não carrega, e `npm test` acusa: o teste de acesso anônimo distingue "tabela protegida" de "tabela não existe" e falha na segunda.
 - [ ] **Rotacionar o `CLOUDINARY_API_SECRET`.** O segredo atual passou por chat e precisa ser trocado: painel do Cloudinary → Settings → API Keys → Generate New Key. Atualizar `.env.local` e a Vercel, depois desativar o antigo. Há um comentário no `.env.local` lembrando.
 - [ ] **Variáveis na Vercel.** As três do Cloudinary (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) precisam estar em Settings → Environment Variables. Sem elas, foto funciona na máquina local e falha no ar.
 - [ ] **Preencher `/configuracoes`.** Endereço, horário e telefone. A landing esconde o botão de WhatsApp sem o telefone, e o comprovante sai com cabeçalho vazio.
 - [ ] **Preencher os valores em `/servicos`.** Os seis tipos semeados estão com valor zero, e a própria tela avisa. Enquanto estiverem assim, toda OS nasce sem preço.
 - [ ] **Cadastrar fornecedores** em Cotações → Fornecedores. Sem eles a tela de registro de cotação não tem onde pôr preço.
-- [ ] **Apagar ou trocar a senha do usuário `claude@gmail.com`.** Foi criado para teste e a senha circulou em texto puro.
+- [x] ~~Apagar o usuário `claude@gmail.com`.~~ Feito em 14/08/2026. Com ele foi embora o único login que servia para exercitar o caminho autenticado — ver a seção 8, "o que ainda não é coberto".
 
 ## 5. Armadilhas descobertas na construção
 
@@ -236,8 +235,15 @@ em tabela sensível.
 receber pagamento, mudar status pela tela. Isso continua exigindo o padrão
 antigo, de script descartável: logar com `@supabase/supabase-js`, montar o
 cookie `sb-<ref>-auth-token` como `base64-` + JSON da sessão, e bater nas rotas
-com ele. Falta um usuário de teste dedicado para isso virar suíte — e o
-`claude@gmail.com`, que servia, é justamente um dos que precisam sumir.
+com ele. Falta um usuário de teste dedicado para isso virar suíte: o
+`claude@gmail.com`, que servia, foi apagado em 14/08/2026 — a senha dele
+tinha circulado em texto puro, e apagar era o certo.
+
+Quando isso for retomado, o usuário de teste precisa nascer diferente: senha
+gerada na hora, guardada só no `.env.local` (que não é versionado), e a suíte
+pulando quando ela não estiver no ambiente — mesmo desenho dos testes de
+acesso anônimo. Senha de teste em texto no repositório é a mesma armadilha
+outra vez.
 
 **Ao mexer numa função pura, o teste vem junto.** Foi assim que
 `lib/periodo.ts` passou a receber o instante por parâmetro: sem isso não havia
