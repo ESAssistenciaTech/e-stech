@@ -98,6 +98,18 @@ tela nenhuma e ocupava cota para sempre.
 - A ordem do apagamento é banco primeiro, nuvem depois. Ao contrário, uma
   falha de rede deixaria a linha apontando para imagem que não existe mais.
 
+**Aparelhos doadores** (`/doadores`), alcançável pelo cabeçalho de Cotações —
+antes de perguntar preço ao fornecedor, a pergunta é se a peça já está na
+gaveta. A tela é uma busca com resposta, não um inventário para navegar.
+
+- **Não tem quantidade, e não é para ganhar.** Dois aparelhos do mesmo modelo
+  são dois registros, porque cada um está num estado diferente de
+  canibalização. Um contador por modelo perderia justo o que importa na gaveta.
+- **O que já saiu é texto livre**, não lista de itens: manter lista de peças
+  arrancadas atualizada é trabalho que ninguém faz. O texto aparece na lista,
+  porque doador sem tela não serve para quem precisa de tela.
+- `esgotado` é terminal mas reversível — some da busca sem sumir do sistema.
+
 ### Rotas existentes
 
 ```
@@ -107,13 +119,14 @@ admin      /dashboard  /os  /os/nova  /os/[id]
            /clientes  /clientes/novo  /clientes/[id]  /clientes/[id]/editar
            /financeiro  /lucro  /cotacoes  /cotacoes/nova
            /insumos  /insumos/novo  /insumos/[id]  /insumos/comprar
+           /doadores  /doadores/novo  /doadores/[id]
            /fornecedores  /fornecedores/novo  /fornecedores/[id]
            /servicos  /servicos/novo  /servicos/[id]
            /mensagens  /configuracoes  /fotos
 api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 ```
 
-### Migrations — 12 aplicadas, a 0013 esperando
+### Migrations — 13 aplicadas, a 0014 esperando
 
 ```
 0001 fase1                    tabelas base, RLS, enums
@@ -129,13 +142,14 @@ api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 0011 view_com_datas           data e custo na view; data de entrega no insert
 0012 insumos                  insumos, lista de compras, comprar_insumos
 0013 fotos_limpeza            tamanho da foto e view da limpeza
+0014 aparelhos_doadores       aparelho guardado para canibalizar
 ```
 
 ## 4. Pendências de ação humana
 
 Nada disso é código. São passos que só o dono pode dar.
 
-- [ ] **Aplicar a migração `0013_fotos_limpeza`.** Colar no SQL Editor do Supabase. Sem ela `/fotos` não carrega, e `npm test` acusa: o teste de acesso anônimo distingue "tabela protegida" de "tabela não existe" e falha na segunda.
+- [ ] **Aplicar a migração `0014_aparelhos_doadores`.** Colar no SQL Editor do Supabase. Sem ela `/doadores` não carrega, e `npm test` acusa: o teste de acesso anônimo distingue "tabela protegida" de "tabela não existe" e falha na segunda.
 - [ ] **Rotacionar o `CLOUDINARY_API_SECRET`.** O segredo atual passou por chat e precisa ser trocado: painel do Cloudinary → Settings → API Keys → Generate New Key. Atualizar `.env.local` e a Vercel, depois desativar o antigo. Há um comentário no `.env.local` lembrando.
 - [ ] **Variáveis na Vercel.** As três do Cloudinary (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) precisam estar em Settings → Environment Variables. Sem elas, foto funciona na máquina local e falha no ar.
 - [ ] **Preencher `/configuracoes`.** Endereço, horário e telefone. A landing esconde o botão de WhatsApp sem o telefone, e o comprovante sai com cabeçalho vazio.
@@ -173,7 +187,6 @@ crescer.
 | Item | Nota |
 |---|---|
 | **Venda avulsa / PDV** | Venda de balcão itemizada, fora da OS. É o único lugar que baixa estoque de insumo. Ver [ADR 0005](docs/adr/0005-venda-avulsa-separada-da-os.md). O dono disse que não vai vender insumo no começo |
-| **Aparelhos doadores** | Aparelho guardado para canibalizar. Não tem quantidade: cada um é um registro com anotação livre do que já foi arrancado |
 | **Múltiplos usuários** | Hoje a policy de RLS é `authenticated` faz tudo. Permissão por papel entra aqui |
 
 ### Fora das fases
@@ -186,7 +199,7 @@ crescer.
 ```bash
 cd C:\Users\sidne\Desktop\e-sTech
 npm run dev          # http://localhost:3000
-npm test             # 95 testes, ~5s
+npm test             # 96 testes, ~5s
 npm run build        # confere tipos e build antes de commitar
 ```
 

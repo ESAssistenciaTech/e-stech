@@ -59,9 +59,17 @@ export default async function CotacoesPage({ searchParams }: Params) {
         <h1 className="font-display text-3xl font-bold tracking-tight text-navy">
           Cotações
         </h1>
+        {/* Antes de perguntar preço ao fornecedor, a pergunta é se a peça já
+            está na gaveta. Por isso Doadores fica no mesmo cabeçalho. */}
+        <Link
+          href="/doadores"
+          className="ml-auto text-sm font-medium text-cyan-deep"
+        >
+          Doadores
+        </Link>
         <Link
           href="/fornecedores"
-          className="ml-auto text-sm font-medium text-cyan-deep"
+          className="text-sm font-medium text-cyan-deep"
         >
           Fornecedores
         </Link>

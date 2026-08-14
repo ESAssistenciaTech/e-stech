@@ -35,6 +35,7 @@ const FECHADAS = [
   "dados_loja",
   "tipos_servico",
   "insumos",
+  "aparelhos_doadores",
 ];
 
 /**
