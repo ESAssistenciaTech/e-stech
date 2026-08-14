@@ -157,19 +157,47 @@ crescer.
 ```bash
 cd C:\Users\sidne\Desktop\e-sTech
 npm run dev          # http://localhost:3000
+npm test             # 93 testes, ~5s
 npm run build        # confere tipos e build antes de commitar
 ```
 
 O `.env.local` não é versionado. O modelo está em `.env.example`.
 
-**Testes:** não existe suíte automatizada. A verificação foi feita com scripts
-descartáveis em Node que entram com a sessão real, exercitam o caminho e
-apagam os dados no fim. Se for repetir, o padrão que funcionou foi: logar com
-`@supabase/supabase-js`, montar o cookie `sb-<ref>-auth-token` como
-`base64-` + JSON da sessão, e bater nas rotas com ele. Vale converter isso numa
-suíte de verdade em algum momento — hoje cada verificação é reescrita do zero.
+## 8. Testes
 
-**O que sempre testar antes de dar por pronto:** que anônimo não alcança
-`ordens_servico`, `clientes`, `cotacoes` nem `os_fotos`; que o comprovante não
-imprime senha do aparelho nem custo de peça; e que o portal não devolve nada
-além dos sete campos de `consultar_os`.
+Rodam no `node --test` do próprio Node 24, que executa `.ts` direto. **Zero
+dependência de teste** — sem Vitest, sem Jest, sem tsx. O gancho de resolução
+do alias `@/` está em `tests/alias.mjs`, e é `.mjs` de propósito: assim não
+entra na checagem de tipos do build.
+
+```
+tests/unidade/     funções puras — formato, csv, mensagem, cotação,
+                   período, relatório. Sem rede.
+tests/seguranca/   fonte.test.ts   lê migrations e telas, sem rede
+                   anonimo.test.ts bate no banco sem sessão
+```
+
+`npm test` roda tudo e carrega o `.env.local`. `npm run test:unidade` roda só o
+que não toca a rede. Sem as variáveis do Supabase no ambiente, os testes de
+acesso anônimo **pulam** em vez de falhar — máquina nova e CI sem segredo não
+devem ver vermelho por isso.
+
+**O que a suíte trava.** As três garantias que o projeto não pode perder:
+anônimo não alcança tabela nenhuma (incluindo a view de totais, que já vazou
+uma vez); o comprovante não imprime senha do aparelho nem custo de peça; o
+portal devolve só os sete campos de `consultar_os`. Junto com elas, as regras
+do `AGENTS.md` viraram teste: toda view com `security_invoker = on`, toda
+função `security definer` com `search_path` fixo, nenhuma policy para `anon`
+em tabela sensível.
+
+**O que ainda não é coberto:** o caminho autenticado ponta a ponta — abrir OS,
+receber pagamento, mudar status pela tela. Isso continua exigindo o padrão
+antigo, de script descartável: logar com `@supabase/supabase-js`, montar o
+cookie `sb-<ref>-auth-token` como `base64-` + JSON da sessão, e bater nas rotas
+com ele. Falta um usuário de teste dedicado para isso virar suíte — e o
+`claude@gmail.com`, que servia, é justamente um dos que precisam sumir.
+
+**Ao mexer numa função pura, o teste vem junto.** Foi assim que
+`lib/periodo.ts` passou a receber o instante por parâmetro: sem isso não havia
+como testar a virada do ano nem as 21h do dia 31, que é exatamente onde os
+erros de fuso moram.

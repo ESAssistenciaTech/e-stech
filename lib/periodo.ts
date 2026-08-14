@@ -19,9 +19,15 @@ const CALENDARIO_LOJA = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
-/** Ano e mês de hoje pelo relógio da loja. `en-CA` formata como AAAA-MM-DD. */
-function hojeNaLoja() {
-  const [ano, mes] = CALENDARIO_LOJA.format(new Date()).split("-").map(Number);
+/**
+ * Ano e mês pelo relógio da loja. `en-CA` formata como AAAA-MM-DD.
+ *
+ * O instante entra por parâmetro para que o teste possa fixar a virada do
+ * ano e o fim do mês às 21h — que é onde os erros de fuso moram e onde
+ * esperar o relógio real chegar não é opção.
+ */
+function hojeNaLoja(agora: Date) {
+  const [ano, mes] = CALENDARIO_LOJA.format(agora).split("-").map(Number);
   return { ano, mes };
 }
 
@@ -39,8 +45,8 @@ function primeiroDia(ano: number, mes: number) {
 }
 
 /** Início do mês corrente. Usado por toda tela que diz "no mês". */
-export function inicioDoMes() {
-  const { ano, mes } = hojeNaLoja();
+export function inicioDoMes(agora = new Date()) {
+  const { ano, mes } = hojeNaLoja(agora);
   return primeiroDia(ano, mes);
 }
 
@@ -65,11 +71,14 @@ export function ehPeriodo(valor: string | undefined): valor is Periodo {
  * `<` o primeiro instante do período seguinte não perde nada.
  * `tudo` devolve nulo nas duas pontas: sem filtro.
  */
-export function intervalo(periodo: Periodo): {
+export function intervalo(
+  periodo: Periodo,
+  agora = new Date(),
+): {
   inicio: string | null;
   fim: string | null;
 } {
-  const { ano, mes } = hojeNaLoja();
+  const { ano, mes } = hojeNaLoja(agora);
 
   switch (periodo) {
     case "mes":
