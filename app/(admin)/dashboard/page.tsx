@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { codigo, moeda } from "@/lib/formato";
+import { inicioDoMes } from "@/lib/periodo";
 import { STATUS, STATUS_ABERTOS, type StatusOS } from "@/lib/tipos";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-
-  const inicioDoMes = new Date();
-  inicioDoMes.setDate(1);
-  inicioDoMes.setHours(0, 0, 0, 0);
 
   const [{ data: abertas }, { data: entradas }, { data: aReceber }] =
     await Promise.all([
@@ -20,7 +17,7 @@ export default async function DashboardPage() {
         .from("movimentacoes_caixa")
         .select("valor")
         .eq("tipo", "entrada")
-        .gte("data", inicioDoMes.toISOString()),
+        .gte("data", inicioDoMes()),
       // Entregue e ainda devendo. Fiado com cliente conhecido é rotina do
       // balcão — mas some de vista se não estiver na tela que se olha todo dia.
       supabase

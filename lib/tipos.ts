@@ -184,4 +184,7 @@ export type TotaisOS = {
   valor_pago: number;
   saldo: number;
   lucro: number;
+  /** Interno, como na tabela: nunca em comprovante, portal ou log. */
+  custo_peca: number;
+  data_entrega: string | null;
 };

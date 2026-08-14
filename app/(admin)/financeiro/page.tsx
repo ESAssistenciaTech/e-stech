@@ -2,20 +2,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { dataHora, moeda } from "@/lib/formato";
 import { ROTULO_CATEGORIA, ROTULO_FORMA, type Movimentacao } from "@/lib/caixa";
+import { inicioDoMes } from "@/lib/periodo";
 import { FormularioMovimentacao } from "./formulario";
 
 export default async function FinanceiroPage() {
   const supabase = await createClient();
 
-  const inicioDoMes = new Date();
-  inicioDoMes.setDate(1);
-  inicioDoMes.setHours(0, 0, 0, 0);
-
   const [{ data: doMes }, { data: recentes }] = await Promise.all([
     supabase
       .from("movimentacoes_caixa")
       .select("tipo, valor")
-      .gte("data", inicioDoMes.toISOString()),
+      .gte("data", inicioDoMes()),
     supabase
       .from("movimentacoes_caixa")
       .select("*, ordens_servico(codigo_publico)")
@@ -53,6 +50,23 @@ export default async function FinanceiroPage() {
         </div>
       </div>
       <p className="-mt-2 px-1 text-xs text-mute">No mês corrente.</p>
+
+      {/* Caixa é dinheiro que entrou; lucro é resultado apurado. São duas
+          perguntas diferentes, e é aqui que a segunda costuma ser feita. */}
+      <Link
+        href="/lucro"
+        className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 hover:border-cyan-deep"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-ink">Lucro</p>
+          <p className="text-xs text-mute">
+            Quanto sobrou depois do custo da peça, por período e por serviço.
+          </p>
+        </div>
+        <span aria-hidden className="shrink-0 text-mute">
+          →
+        </span>
+      </Link>
 
       <FormularioMovimentacao />
 

@@ -1,6 +1,7 @@
 # Estado do projeto — E&S Tech
 
-Documento de retomada. Escrito em **13/08/2026**, no commit `13f8dff`.
+Documento de retomada. Escrito em **13/08/2026**, atualizado em
+**14/08/2026** com o relatório de lucro.
 
 Serve para quem chega sem ter acompanhado a construção — inclusive um agente
 em sessão nova. Diz onde o projeto está, o que já foi decidido, o que está
@@ -54,6 +55,21 @@ Portal público de acompanhamento · Comprovante impresso com QR · WhatsApp com
 modelos editáveis · Cotação de peça com fornecedores · Landing page · Registro
 fotográfico (entrada e entrega).
 
+### Fase 3 — começada
+
+**Relatório de lucro** (`/lucro`), alcançável pelo Caixa. Apura por entrega,
+não por caixa: a OS entra no período em que foi entregue, mesmo com saldo em
+aberto. Mostra a composição (mão de obra + peça vendida − custo da peça), a
+mão de obra por tipo de serviço e a lista por OS.
+
+Duas coisas que a tela diz e convém não desfazer:
+
+- **Não existe lucro por tipo de serviço.** `custo_peca` é da OS inteira; numa
+  OS com dois serviços não há critério para dividi-lo. Ratear por valor daria
+  um número com cara de apurado e sem lastro. Por serviço vai só mão de obra.
+- **Lucro não é dinheiro em caixa** e não desconta aluguel nem luz. Quem
+  responde "quanto entrou" é o Caixa.
+
 ### Rotas existentes
 
 ```
@@ -61,14 +77,14 @@ públicas   /  ·  /acompanhar  ·  /acompanhar/[codigo]  ·  /login
 admin      /dashboard  /os  /os/nova  /os/[id]
            /os/[id]/editar  /os/[id]/fotos  /os/[id]/comprovante
            /clientes  /clientes/novo  /clientes/[id]  /clientes/[id]/editar
-           /financeiro  /cotacoes  /cotacoes/nova
+           /financeiro  /lucro  /cotacoes  /cotacoes/nova
            /fornecedores  /fornecedores/novo  /fornecedores/[id]
            /servicos  /servicos/novo  /servicos/[id]
            /mensagens  /configuracoes
 api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 ```
 
-### Migrations — todas as 10 aplicadas
+### Migrations — 10 aplicadas, a 0011 esperando
 
 ```
 0001 fase1                    tabelas base, RLS, enums
@@ -81,12 +97,14 @@ api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 0008 cotacoes                 fornecedores, peças, qualidades, cotações
 0009 servicos_publicos        serviços para a landing, sem preço
 0010 os_fotos                 registro fotográfico
+0011 view_com_datas           data e custo na view; data de entrega no insert
 ```
 
 ## 4. Pendências de ação humana
 
 Nada disso é código. São passos que só o dono pode dar.
 
+- [ ] **Aplicar a migração `0011_view_com_datas`.** Colar o arquivo no SQL Editor do Supabase, como foi feito com as dez anteriores. Sem ela `/lucro` não carrega: a view ainda não tem `data_entrega` nem `custo_peca`.
 - [ ] **Rotacionar o `CLOUDINARY_API_SECRET`.** O segredo atual passou por chat e precisa ser trocado: painel do Cloudinary → Settings → API Keys → Generate New Key. Atualizar `.env.local` e a Vercel, depois desativar o antigo. Há um comentário no `.env.local` lembrando.
 - [ ] **Variáveis na Vercel.** As três do Cloudinary (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) precisam estar em Settings → Environment Variables. Sem elas, foto funciona na máquina local e falha no ar.
 - [ ] **Preencher `/configuracoes`.** Endereço, horário e telefone. A landing esconde o botão de WhatsApp sem o telefone, e o comprovante sai com cabeçalho vazio.
@@ -110,6 +128,8 @@ Coisas que custaram tempo e não estão em nenhum ADR.
 
 **RLS não filtra coluna.** Quando uma tela pública precisa de parte de uma tabela protegida, a saída **não** é abrir a tabela para `anon` — é criar função `security definer` com `search_path` fixo devolvendo campo a campo. Já foi feito três vezes: `consultar_os`, `dados_loja_publicos`, `servicos_publicos`.
 
+**O mês não começa em UTC.** O servidor da Vercel roda em UTC; `new Date()` com `setDate(1)` marca meia-noite de Londres, três horas antes daqui. Uma OS entregue às 21h30 do dia 31 caía no mês seguinte. Recorte de tempo agora sai só de `lib/periodo.ts`, que fixa `-03:00` (o Brasil não tem horário de verão desde 2019). Painel e Caixa já usam de lá — não voltar a montar mês na mão na tela.
+
 **Comparar HTML cru em teste dá falso negativo.** Mordeu quatro vezes. O `Intl` usa espaço não-quebrável (U+00A0) entre `R$` e o número; o React insere `<!-- -->` entre texto estático e expressão no SSR; entidades vêm escapadas. Normalize antes de comparar, ou compare pelos dígitos.
 
 **O `&` no nome da pasta quebrava o npm.** A pasta chamava `e&sTech` e o shell do Windows cortava o caminho no `&`. Já resolvido (renomeada para `e-sTech`), mas não voltar a usar `&` em caminho.
@@ -124,7 +144,6 @@ crescer.
 | **Venda avulsa / PDV** | Venda de balcão itemizada, fora da OS. É o único lugar que baixa estoque de insumo. Ver [ADR 0005](docs/adr/0005-venda-avulsa-separada-da-os.md). O dono disse que não vai vender insumo no começo |
 | **Insumos e lista de compras** | É lista de compras, **não** controle de estoque: quantidade editada à mão e marcação de "precisa repor". Ver [ADR 0006](docs/adr/0006-insumo-e-lista-de-compras-nao-controle-de-estoque.md) |
 | **Aparelhos doadores** | Aparelho guardado para canibalizar. Não tem quantidade: cada um é um registro com anotação livre do que já foi arrancado |
-| **Relatório de lucro** | Por OS e por tipo de serviço. Os dados já existem (`custo_peca` e a view de totais); falta a tela |
 | **Múltiplos usuários** | Hoje a policy de RLS é `authenticated` faz tudo. Permissão por papel entra aqui |
 | **Limpeza de fotos** | Tela listando OS com garantia vencida que ainda têm foto, ordenadas por espaço, para apagar em lote. O dono quis manual, não automático |
 
