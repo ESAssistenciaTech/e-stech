@@ -212,10 +212,12 @@ do alias `@/` está em `tests/alias.mjs`, e é `.mjs` de propósito: assim não
 entra na checagem de tipos do build.
 
 ```
-tests/unidade/     funções puras — formato, csv, mensagem, cotação,
-                   período, relatório. Sem rede.
-tests/seguranca/   fonte.test.ts   lê migrations e telas, sem rede
-                   anonimo.test.ts bate no banco sem sessão
+tests/unidade/      funções puras — formato, csv, mensagem, cotação,
+                    período, relatório. Sem rede.
+tests/seguranca/    fonte.test.ts   lê migrations e telas, sem rede
+                    anonimo.test.ts bate no banco sem sessão
+tests/autenticado/  dados.test.ts   a conta do dinheiro, com sessão
+                    telas.test.ts   HTML servido, com cookie de sessão
 ```
 
 `npm test` roda tudo e carrega o `.env.local`. `npm run test:unidade` roda só o
@@ -231,19 +233,40 @@ do `AGENTS.md` viraram teste: toda view com `security_invoker = on`, toda
 função `security definer` com `search_path` fixo, nenhuma policy para `anon`
 em tabela sensível.
 
-**O que ainda não é coberto:** o caminho autenticado ponta a ponta — abrir OS,
-receber pagamento, mudar status pela tela. Isso continua exigindo o padrão
-antigo, de script descartável: logar com `@supabase/supabase-js`, montar o
-cookie `sb-<ref>-auth-token` como `base64-` + JSON da sessão, e bater nas rotas
-com ele. Falta um usuário de teste dedicado para isso virar suíte: o
-`claude@gmail.com`, que servia, foi apagado em 14/08/2026 — a senha dele
-tinha circulado em texto puro, e apagar era o certo.
+### Testes autenticados
 
-Quando isso for retomado, o usuário de teste precisa nascer diferente: senha
-gerada na hora, guardada só no `.env.local` (que não é versionado), e a suíte
-pulando quando ela não estiver no ambiente — mesmo desenho dos testes de
-acesso anônimo. Senha de teste em texto no repositório é a mesma armadilha
-outra vez.
+Cobrem o que só existe com sessão: que a view de totais fecha a conta
+(mão de obra, total, pago, saldo, lucro), que o gatilho grava `data_entrega`
+em OS aberta já como entregue, que a view da limpeza enxerga garantia vencida,
+e que `comprar_insumos` sobe a quantidade **e** lança no caixa — ou nenhum dos
+dois, quando o valor é inválido.
+
+O `telas.test.ts` sobe um degrau: monta o cookie `sb-<ref>-auth-token` como
+`base64-` + JSON da sessão, bate nas rotas do servidor de dev e confere o HTML
+servido. O teste de fonte já garante que o comprovante não *menciona* senha
+nem custo; este garante que eles não *saem* — pegaria um vazamento que
+chegasse por propriedade de componente ou objeto serializado inteiro.
+
+**Ligar exige um passo humano.** Crie um usuário só para teste em
+Supabase → Authentication → Users, com senha gerada na hora, e ponha
+`TESTE_EMAIL` e `TESTE_SENHA` no `.env.local`. Sem eles a suíte pula com o
+motivo escrito. O `telas.test.ts` também precisa do `npm run dev` no ar, e
+pula dizendo isso.
+
+Senha de teste nunca entra no repositório — foi assim que o `claude@gmail.com`
+virou pendência de segurança, e ele foi apagado em 14/08/2026.
+
+> **Estes testes escrevem no banco de produção.** O sistema tem um banco só.
+> Tudo que eles criam leva o prefixo `zz-teste-`, é apagado no fim, e a sobra
+> de execução quebrada é varrida antes da próxima. Ainda assim, um teste que
+> morra no meio deixa registro visível nas telas até a próxima rodada. Para
+> isolar de vez, aponte um segundo projeto Supabase — o plano gratuito
+> permite dois.
+
+**O que continua fora:** as mutações pela interface — abrir OS pelo
+formulário, receber pagamento, mudar status. Os testes autenticados escrevem
+pelo cliente do Supabase, não pelas server actions, então erro que more só na
+action passa batido.
 
 **Ao mexer numa função pura, o teste vem junto.** Foi assim que
 `lib/periodo.ts` passou a receber o instante por parâmetro: sem isso não havia

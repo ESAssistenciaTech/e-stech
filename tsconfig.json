@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // O Node exige a extensão real no import, e é ele quem roda os testes —
+    // sem bundler no caminho. Permitido porque o projeto é noEmit: quem
+    // compila é o Next, não o tsc.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
