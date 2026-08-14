@@ -49,6 +49,12 @@ export default async function ConfiguracoesPage() {
           titulo: "Mensagens do WhatsApp",
           detalhe: "O texto que abre pronto ao avisar o cliente.",
         },
+        {
+          href: "/fotos",
+          titulo: "Espaço de fotos",
+          detalhe:
+            "Quanto as fotos ocupam e quais já podem sair, por garantia vencida.",
+        },
       ].map((item) => (
         <Link
           key={item.href}

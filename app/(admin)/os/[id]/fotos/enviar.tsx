@@ -72,6 +72,7 @@ export function EnviarFotos({
           publicId: dados.public_id,
           largura: foto.largura,
           altura: foto.altura,
+          bytes: foto.arquivo.size,
         });
         if (registro.erro) {
           setErro(registro.erro);

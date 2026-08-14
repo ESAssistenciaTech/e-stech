@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { apagarImagens } from "@/lib/cloudinary";
 
 export type Assinatura = {
   assinatura: string;
@@ -67,6 +68,9 @@ export async function registrarFoto(dados: {
   publicId: string;
   largura: number;
   altura: number;
+  /** Tamanho depois de comprimir. É o que faz a tela de limpeza ordenar
+      por espaço de verdade, em vez de por chute. */
+  bytes: number;
 }): Promise<EstadoFoto> {
   const supabase = await createClient();
   const { error } = await supabase.from("os_fotos").insert({
@@ -76,6 +80,7 @@ export async function registrarFoto(dados: {
     public_id: dados.publicId,
     largura: dados.largura,
     altura: dados.altura,
+    bytes: dados.bytes,
   });
 
   if (error) return { erro: "A foto subiu, mas não foi registrada na OS." };
@@ -100,32 +105,12 @@ export async function apagarFoto(form: FormData) {
   await supabase.from("os_fotos").delete().eq("id", id);
 
   // Apaga também no Cloudinary: só remover a linha aqui deixaria o arquivo
-  // ocupando espaço lá para sempre, e o plano gratuito tem teto.
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-
-  if (foto?.public_id && cloudName && apiKey && apiSecret) {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const assinatura = createHash("sha1")
-      .update(`public_id=${foto.public_id}&timestamp=${timestamp}${apiSecret}`)
-      .digest("hex");
-
-    const corpo = new FormData();
-    corpo.append("public_id", foto.public_id);
-    corpo.append("timestamp", String(timestamp));
-    corpo.append("api_key", apiKey);
-    corpo.append("signature", assinatura);
-
-    await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
-      { method: "POST", body: corpo },
-    ).catch(() => {
-      // A linha já saiu do banco; o arquivo órfão aparece na tela de
-      // limpeza depois. Falhar aqui não pode travar o dono.
-    });
-  }
+  // ocupando espaço lá para sempre, e o plano gratuito tem teto. Se a rede
+  // falhar, o arquivo órfão aparece em /fotos — falhar aqui não pode travar
+  // o dono.
+  if (foto?.public_id) await apagarImagens([foto.public_id]);
 
   revalidatePath(`/os/${osId}`);
   revalidatePath(`/os/${osId}/fotos`);
+  revalidatePath("/fotos");
 }

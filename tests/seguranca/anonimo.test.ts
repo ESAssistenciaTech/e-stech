@@ -74,14 +74,17 @@ describe("acesso anônimo", { skip: semAmbiente ? motivo : false }, () => {
    * A view já vazou uma vez, por nascer sem security_invoker. É o caso em
    * que o RLS das tabelas de baixo existe e mesmo assim o dado sai.
    */
-  test("a view de totais não devolve linha", async () => {
-    const { data } = await anonimo!
-      .from("ordens_servico_totais")
-      .select("*")
-      .limit(1);
+  for (const view of ["ordens_servico_totais", "os_fotos_limpeza"]) {
+    test(`a view ${view} não devolve linha`, async () => {
+      const { data, error } = await anonimo!.from(view).select("*").limit(1);
 
-    assert.equal(data?.length ?? 0, 0, "ordens_servico_totais vazou valores");
-  });
+      assert.ok(
+        !tabelaAusente(error),
+        `${view} não existe no banco — migração não aplicada`,
+      );
+      assert.equal(data?.length ?? 0, 0, `${view} vazou dado para anônimo`);
+    });
+  }
 
   test("não dá para escrever nada", async () => {
     const { error } = await anonimo!

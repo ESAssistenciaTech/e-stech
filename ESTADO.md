@@ -83,6 +83,21 @@ se faz de um insumo é "o que preciso comprar?", não "quantos tenho?"
   e a outra esquecida, e aí ou o caixa mente ou o estoque mente.
 - Insumo (a loja tem) ≠ peça (catálogo de cotação, a loja não tem).
 
+**Limpeza de fotos** (`/fotos`), dentro de Ajustes. Lista as OS com garantia
+vencida que ainda guardam foto, ordenadas pelo espaço que ocupam, para apagar
+em lote — banco e Cloudinary juntos. Também acha **arquivo solto**: o que
+ficou na nuvem depois de um apagamento que falhou no meio, que não aparecia em
+tela nenhuma e ocupava cota para sempre.
+
+- **Manual por decisão.** Apagar prova de estado sozinho, no dia em que a
+  garantia vence, é o automatismo que um dia apaga justo a foto de que se
+  precisava.
+- `os_fotos.bytes` passou a ser gravado no envio. Sem ele, "ordenar por
+  espaço" seria ordenar por chute; linha antiga sem tamanho entra estimada em
+  200 KB, que é o que a compressão costuma entregar.
+- A ordem do apagamento é banco primeiro, nuvem depois. Ao contrário, uma
+  falha de rede deixaria a linha apontando para imagem que não existe mais.
+
 ### Rotas existentes
 
 ```
@@ -94,11 +109,11 @@ admin      /dashboard  /os  /os/nova  /os/[id]
            /insumos  /insumos/novo  /insumos/[id]  /insumos/comprar
            /fornecedores  /fornecedores/novo  /fornecedores/[id]
            /servicos  /servicos/novo  /servicos/[id]
-           /mensagens  /configuracoes
+           /mensagens  /configuracoes  /fotos
 api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 ```
 
-### Migrations — 11 aplicadas, a 0012 esperando
+### Migrations — 12 aplicadas, a 0013 esperando
 
 ```
 0001 fase1                    tabelas base, RLS, enums
@@ -113,13 +128,14 @@ api        /api/exportar/[tipo]   (ordens | clientes | caixa)
 0010 os_fotos                 registro fotográfico
 0011 view_com_datas           data e custo na view; data de entrega no insert
 0012 insumos                  insumos, lista de compras, comprar_insumos
+0013 fotos_limpeza            tamanho da foto e view da limpeza
 ```
 
 ## 4. Pendências de ação humana
 
 Nada disso é código. São passos que só o dono pode dar.
 
-- [ ] **Aplicar a migração `0012_insumos`.** Colar no SQL Editor do Supabase. Sem ela `/insumos` não carrega, e `npm test` acusa: o teste de acesso anônimo distingue "tabela protegida" de "tabela não existe" e falha na segunda.
+- [ ] **Aplicar a migração `0013_fotos_limpeza`.** Colar no SQL Editor do Supabase. Sem ela `/fotos` não carrega, e `npm test` acusa: o teste de acesso anônimo distingue "tabela protegida" de "tabela não existe" e falha na segunda.
 - [ ] **Rotacionar o `CLOUDINARY_API_SECRET`.** O segredo atual passou por chat e precisa ser trocado: painel do Cloudinary → Settings → API Keys → Generate New Key. Atualizar `.env.local` e a Vercel, depois desativar o antigo. Há um comentário no `.env.local` lembrando.
 - [ ] **Variáveis na Vercel.** As três do Cloudinary (`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) precisam estar em Settings → Environment Variables. Sem elas, foto funciona na máquina local e falha no ar.
 - [ ] **Preencher `/configuracoes`.** Endereço, horário e telefone. A landing esconde o botão de WhatsApp sem o telefone, e o comprovante sai com cabeçalho vazio.
@@ -159,7 +175,6 @@ crescer.
 | **Venda avulsa / PDV** | Venda de balcão itemizada, fora da OS. É o único lugar que baixa estoque de insumo. Ver [ADR 0005](docs/adr/0005-venda-avulsa-separada-da-os.md). O dono disse que não vai vender insumo no começo |
 | **Aparelhos doadores** | Aparelho guardado para canibalizar. Não tem quantidade: cada um é um registro com anotação livre do que já foi arrancado |
 | **Múltiplos usuários** | Hoje a policy de RLS é `authenticated` faz tudo. Permissão por papel entra aqui |
-| **Limpeza de fotos** | Tela listando OS com garantia vencida que ainda têm foto, ordenadas por espaço, para apagar em lote. O dono quis manual, não automático |
 
 ### Fora das fases
 
@@ -171,7 +186,7 @@ crescer.
 ```bash
 cd C:\Users\sidne\Desktop\e-sTech
 npm run dev          # http://localhost:3000
-npm test             # 94 testes, ~5s
+npm test             # 95 testes, ~5s
 npm run build        # confere tipos e build antes de commitar
 ```
 
